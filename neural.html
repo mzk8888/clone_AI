@@ -3,23 +3,28 @@
 <title>∞Mind</title>
 <style>
   :root {
-    --ground: #05080e;
-    --ground-2: #0c1421;
-    --panel: rgba(8,14,24,0.62);
-    --line: rgba(150,182,214,0.18);
-    --line-s: rgba(150,182,214,0.34);
-    --fg: #d4dfec;
-    --fg-dim: #7d8fa6;
-    --fg-faint: #4b5b6e;
-    --r0: #4ed8e6;
-    --r1: #5fe3a6;
-    --r2: #b491ff;
-    --r3: #5c8dff;
-    --r4: #ffb25c;
-    --r5: #ff7e74;
-    --spark: #fff3d0;
+    /* 京都・祇園・西陣織 — 墨の地に金の糸、思考領域は京の伝統色 */
+    --ground: #0a0907;        /* 墨 */
+    --ground-2: #191209;      /* 焦茶を帯びた中間 */
+    --panel: rgba(22,17,11,0.64);
+    --line: rgba(201,162,39,0.15);      /* 金 */
+    --line-s: rgba(201,162,39,0.32);
+    --line-rgb: 201,162,39;
+    --fg: #ece4d3;            /* 生成り */
+    --fg-dim: #9b8f77;
+    --fg-faint: #6a6250;
+    --kin: #c9a227;           /* 金 */
+    --kin-hi: #e8c86a;
+    --r0: #00a3af;            /* 浅葱色 — 技術 / FRONTAL */
+    --r1: #68be8d;            /* 若竹色 — 学習 / PARIETAL */
+    --r2: #a59aca;            /* 藤紫   — アイデア / TEMPORAL */
+    --r3: #2792c3;            /* 縹色   — 目標 / OCCIPITAL */
+    --r4: #f8b500;            /* 山吹色 — 感情 / CEREBELLUM */
+    --r5: #d05a6e;            /* 今様色 — 人間関係 / BRAINSTEM */
+    --spark: #f4dca6;         /* 金の光 */
     --font-d:"Bahnschrift","DIN Alternate","Oswald","Helvetica Neue",system-ui,sans-serif;
     --font-u:"Segoe UI","Hiragino Sans","Noto Sans JP","Yu Gothic UI",system-ui,sans-serif;
+    --font-k:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP","Songti SC",serif;
     --font-m:"Cascadia Mono","Consolas",ui-monospace,"SF Mono",monospace;
   }
   body{margin:0;background:var(--ground);color:var(--fg);font-family:var(--font-u);-webkit-font-smoothing:antialiased;overflow:hidden}
@@ -28,10 +33,21 @@
     background:radial-gradient(120% 90% at 50% 46%,var(--ground-2) 0%,var(--ground) 68%)}
 
   #brain{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:grab}
+
+  /* 西陣織の経糸緯糸 ＋ 枯山水の砂紋 ＋ 祇園の灯。canvas の上、HUD の下に敷く */
+  .stage::after{
+    content:"";position:absolute;inset:0;z-index:1;pointer-events:none;
+    background:
+      repeating-radial-gradient(ellipse 62% 40% at 50% 122%,
+        transparent 0 25px, rgba(201,162,39,.030) 25px 26px),
+      radial-gradient(72% 42% at 50% 104%, rgba(232,160,60,.085), transparent 72%),
+      repeating-linear-gradient(90deg, rgba(201,162,39,.019) 0 1px, transparent 1px 8px),
+      repeating-linear-gradient(0deg,  rgba(201,162,39,.014) 0 1px, transparent 1px 8px);
+  }
   #brain.dragging{cursor:grabbing}
 
   /* corner ticks */
-  .ticks{position:absolute;inset:0;pointer-events:none}
+  .ticks{position:absolute;inset:0;pointer-events:none;z-index:11}
   .ticks i{position:absolute;width:18px;height:18px;border:0 solid var(--line);opacity:.8}
   .ticks i:nth-child(1){top:14px;left:14px;border-top-width:1px;border-left-width:1px}
   .ticks i:nth-child(2){top:14px;right:14px;border-top-width:1px;border-right-width:1px}
@@ -39,7 +55,7 @@
   .ticks i:nth-child(4){bottom:14px;right:14px;border-bottom-width:1px;border-right-width:1px}
 
   /* HUD overlay — 3 columns: left panel | brain center (empty) | right panel */
-  .hud{position:absolute;inset:0;padding:clamp(14px,2.2vw,30px);display:grid;
+  .hud{position:absolute;inset:0;z-index:10;padding:clamp(14px,2.2vw,30px);display:grid;
     grid-template-columns:200px 1fr 220px;grid-template-rows:auto 1fr auto;
     gap:clamp(10px,1.4vw,18px);pointer-events:none}
   .hud>*{pointer-events:auto}
@@ -49,10 +65,10 @@
   .eyebrow{margin:0 0 8px;font-size:10.5px;letter-spacing:.24em;color:var(--fg-dim)}
   .eyebrow::before{content:"";display:inline-block;width:20px;height:1px;background:var(--line-s);vertical-align:middle;margin-right:9px}
   h1{margin:0;display:flex;align-items:baseline;gap:12px;font-weight:400;line-height:.9}
-  h1 .ja{font-family:var(--font-u);font-size:clamp(32px,5.5vw,58px);font-weight:300;letter-spacing:.06em}
+  h1 .ja{font-family:var(--font-k);font-size:clamp(32px,5.5vw,58px);font-weight:400;letter-spacing:.05em}
   h1 .la{font-family:var(--font-d);font-size:clamp(12px,1.4vw,17px);letter-spacing:.32em;color:var(--fg-dim);text-transform:uppercase}
-  h1 .inf{font-style:normal;font-size:1.12em;letter-spacing:0;color:var(--r0);
-    text-shadow:0 0 26px rgba(78,216,230,.55);margin-right:.04em}
+  h1 .inf{font-style:normal;font-size:1.1em;letter-spacing:0;color:var(--kin-hi);
+    text-shadow:0 0 30px rgba(201,162,39,.6);margin-right:.06em}
   .lede{margin:12px 0 0;max-width:29ch;font-size:12.5px;line-height:1.65;color:var(--fg-dim)}
 
   /* right panel */
@@ -154,7 +170,7 @@
   .mode-sw button .ja{font-family:var(--font-u);letter-spacing:.08em;text-transform:none;
     font-size:10px;margin-right:6px}
   .mode-sw button:hover:not(.on){color:var(--fg-dim)}
-  .mode-sw button.on{color:#fff;background:rgba(155,139,255,.22);box-shadow:inset 0 -2px 0 #9B8BFF}
+  .mode-sw button.on{color:var(--kin-hi);background:rgba(201,162,39,.16);box-shadow:inset 0 -2px 0 var(--kin)}
 
   .via-filters{display:flex;flex-wrap:wrap;justify-content:center;gap:4px;max-width:min(560px,80vw);
     opacity:0;transform:translateY(-4px);transition:opacity .3s,transform .3s;pointer-events:none}
@@ -162,7 +178,7 @@
   .via-pill{padding:3px 10px;background:rgba(6,12,26,.7);border:1px solid var(--line);color:var(--fg-faint);
     font-family:var(--font-d);font-size:8px;letter-spacing:.14em;cursor:pointer;transition:.15s;
     backdrop-filter:blur(9px)}
-  .via-pill.active{color:#fff;border-color:var(--vc,#9B8BFF);background:rgba(var(--vcr,155,139,255),.3)}
+  .via-pill.active{color:#fff;border-color:var(--vc,var(--kin));background:rgba(var(--vcr,201,162,39),.28)}
   .via-pill:hover:not(.active){color:var(--fg-dim);border-color:var(--line-s)}
 
   .via-caption{font-size:9.5px;color:var(--fg-faint);letter-spacing:.04em;text-align:center;
@@ -175,11 +191,11 @@
     padding:18px 20px;display:none}
   .via-modal.show{display:block}
   .via-modal-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:4px}
-  .vm-title{font-size:22px;font-weight:300;line-height:1;letter-spacing:.02em}
+  .vm-title{font-family:var(--font-k);font-size:23px;font-weight:400;line-height:1;letter-spacing:.04em}
   .vm-close{background:none;border:0;color:var(--fg-faint);font-size:14px;cursor:pointer;padding:2px;flex-shrink:0}
   .vm-close:hover{color:var(--fg)}
-  .vm-badge{display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border:1px solid var(--vc,#9B8BFF);
-    font-family:var(--font-d);font-size:7.5px;letter-spacing:.16em;color:var(--vc,#9B8BFF);margin-bottom:11px}
+  .vm-badge{display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border:1px solid var(--vc,var(--kin));
+    font-family:var(--font-d);font-size:7.5px;letter-spacing:.16em;color:var(--vc,var(--kin));margin-bottom:11px}
   .vm-def{font-size:11.5px;line-height:1.8;color:var(--fg-dim);margin-bottom:12px;border-left:1px solid var(--line);padding-left:10px}
   .vm-zones{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:12px}
   .vm-zone{padding:7px 9px;border:1px solid var(--line)}
@@ -442,7 +458,8 @@ function refreshPal(){
   const cs=getComputedStyle(document.documentElement);isDark=true;
   regionHex=RVARS.map(v=>cs.getPropertyValue(v).trim());
   regionRGB=regionHex.map(h2r);sparkRGB=h2r(cs.getPropertyValue('--spark').trim()||'#fff3d0');
-  lineRGB=[150,182,214];groundHex=cs.getPropertyValue('--ground').trim()||'#05080e';
+  lineRGB=(cs.getPropertyValue('--line-rgb').trim()||'150,182,214').split(',').map(Number);
+  groundHex=cs.getPropertyValue('--ground').trim()||'#0a0907';
   lineHex=cs.getPropertyValue('--line').trim();
   sprites=regionRGB.map(makeSprite);sparkSprite=makeSprite(sparkRGB);}
 refreshPal();
@@ -1037,12 +1054,12 @@ if(synth){synth.getVoices();synth.addEventListener('voiceschanged',()=>synth.get
 
 // 6 virtues → brain region index (0 FRONTAL, 1 PARIETAL, 2 TEMPORAL, 3 OCCIPITAL, 4 CEREBELLUM, 5 BRAINSTEM)
 const VIRTUE={
-  wis:{jp:'知恵',en:'Wisdom',hex:'#9B8BFF',rgb:'155,139,255',reg:0,regJp:'技術 / FRONTAL'},
-  cou:{jp:'勇気',en:'Courage',hex:'#FF5A72',rgb:'255,90,114',reg:1,regJp:'学習 / PARIETAL'},
-  tra:{jp:'超越性',en:'Transcendence',hex:'#C07CF0',rgb:'192,124,240',reg:2,regJp:'アイデア / TEMPORAL'},
-  tem:{jp:'節制',en:'Temperance',hex:'#3CC870',rgb:'60,200,112',reg:3,regJp:'目標 / OCCIPITAL'},
-  hum:{jp:'人間性',en:'Humanity',hex:'#FF8B5C',rgb:'255,139,92',reg:4,regJp:'感情 / CEREBELLUM'},
-  jus:{jp:'正義',en:'Justice',hex:'#38A8E0',rgb:'56,168,224',reg:5,regJp:'人間関係 / BRAINSTEM'},
+  wis:{jp:'知恵',en:'Wisdom',hex:'#00A3AF',rgb:'0,163,175',reg:0,regJp:'技術 / FRONTAL'},
+  cou:{jp:'勇気',en:'Courage',hex:'#68BE8D',rgb:'104,190,141',reg:1,regJp:'学習 / PARIETAL'},
+  tra:{jp:'超越性',en:'Transcendence',hex:'#A59ACA',rgb:'165,154,202',reg:2,regJp:'アイデア / TEMPORAL'},
+  tem:{jp:'節制',en:'Temperance',hex:'#2792C3',rgb:'39,146,195',reg:3,regJp:'目標 / OCCIPITAL'},
+  hum:{jp:'人間性',en:'Humanity',hex:'#F8B500',rgb:'248,181,0',reg:4,regJp:'感情 / CEREBELLUM'},
+  jus:{jp:'正義',en:'Justice',hex:'#D05A6E',rgb:'208,90,110',reg:5,regJp:'人間関係 / BRAINSTEM'},
 };
 
 // x: 内向(-1) ↔ 対人(+1)   y: 感情(-1) ↔ 理性(+1)
@@ -1113,7 +1130,7 @@ const mkPill=(label,key,hex,rgb)=>{
     if(sel&&filter&&sel.v!==filter)sel=null;
     if(window._isolateRegion)window._isolateRegion(filter?VIRTUE[filter].reg:-1);});
   pills.appendChild(b);};
-mkPill('ALL',null,'#9B8BFF','155,139,255');
+mkPill('ALL',null,'#c9a227','201,162,39');
 for(const [k,V] of Object.entries(VIRTUE))mkPill(V.jp,k,V.hex,V.rgb);
 
 $('vm-close').addEventListener('click',close);
