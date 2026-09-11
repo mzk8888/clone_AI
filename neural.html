@@ -1,3 +1,5 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Mizukiの脳 — NEURAL CONSTRUCT</title>
 <style>
   :root {
@@ -20,7 +22,7 @@
     --font-u:"Segoe UI","Hiragino Sans","Noto Sans JP","Yu Gothic UI",system-ui,sans-serif;
     --font-m:"Cascadia Mono","Consolas",ui-monospace,"SF Mono",monospace;
   }
-  body{margin:0;background:var(--ground);color:var(--fg);font-family:var(--font-u);-webkit-font-smoothing:antialiased;overflow:hidden}
+  body{margin:0;background:var(--ground);color:var(--fg);font-family:var(--font-u);-webkit-font-smoothing:antialiased}
 
   .stage{position:relative;width:100%;height:100dvh;min-height:520px;overflow:hidden;
     background:radial-gradient(120% 90% at 50% 46%,var(--ground-2) 0%,var(--ground) 68%)}
@@ -138,34 +140,66 @@
   .hint span{display:block;margin-top:4px;font-family:var(--font-u);font-size:10.5px;letter-spacing:.05em;text-transform:none}
   .hint.gone{opacity:0}
 
-  /* ── VIA CHARACTER STRENGTHS ── */
-  .rpanel-tabs{display:flex;border-bottom:1px solid var(--line);flex-shrink:0}
-  .rpanel-tab{flex:1;padding:6px 0;background:none;border:0;border-bottom:2px solid transparent;
-    font-family:var(--font-d);font-size:8.5px;letter-spacing:.22em;color:var(--fg-faint);
-    text-transform:uppercase;cursor:pointer;transition:.18s;margin-bottom:-1px}
-  .rpanel-tab.active{color:#9B8BFF;border-bottom-color:#9B8BFF}
-  .rpanel-tab:hover:not(.active){color:var(--fg-dim)}
-  #pane-neural{display:flex;flex-direction:column;gap:10px;flex:1;overflow:hidden}
-  .via-panel{display:none;flex-direction:column;gap:7px;flex:1;overflow:hidden}
-  .via-panel.show{display:flex}
-  .via-map-wrap{padding:9px 11px 8px;background:var(--panel);border:1px solid var(--line);backdrop-filter:blur(9px);flex-shrink:0}
-  .via-map-wrap .via-head{font-family:var(--font-d);font-size:8.5px;letter-spacing:.22em;color:var(--fg-dim);text-transform:uppercase;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center}
-  #viaMap{display:block;width:100%;height:118px}
-  .via-filters{display:flex;flex-wrap:wrap;gap:3px;flex-shrink:0}
-  .via-pill{padding:2.5px 7px;background:none;border:1px solid var(--line);color:var(--fg-faint);
-    font-family:var(--font-d);font-size:7.5px;letter-spacing:.10em;cursor:pointer;transition:.15s}
-  .via-pill.active{color:#fff;border-color:var(--vc,#9B8BFF);background:rgba(var(--vcr,155,139,255),.25)}
+  /* ── 下層セクション共通（設計図2・3）── */
+  .sheet{border-top:1px solid var(--line);padding:clamp(38px,5vw,66px) clamp(16px,4vw,54px) clamp(30px,4vw,54px);
+    background:linear-gradient(180deg,rgba(8,14,24,.5),transparent 40%)}
+  .sheet-head{max-width:1680px;margin:0 auto clamp(22px,3vw,34px)}
+  .sheet-eyebrow{font-family:var(--font-d);font-size:8.5px;letter-spacing:.30em;text-transform:uppercase;
+    color:var(--r2);margin:0 0 12px;display:flex;align-items:center;gap:12px}
+  .sheet-eyebrow::after{content:"";flex:1;height:1px;background:var(--line);max-width:120px}
+  .sheet-title{font-size:clamp(24px,3.2vw,36px);font-weight:300;letter-spacing:.01em;margin:0 0 10px;line-height:1.2}
+  .sheet-lede{font-size:11.5px;line-height:1.95;color:var(--fg-dim);margin:0;max-width:62ch}
+  .sheet-lede em{font-style:normal;color:var(--r2)}
+  .sheet-body{max-width:1680px;margin:0 auto}
+
+  /* フィルター */
+  .via-filters{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:18px}
+  .via-pill{padding:4px 12px;background:none;border:1px solid var(--line);color:var(--fg-faint);
+    font-family:var(--font-d);font-size:9px;letter-spacing:.14em;cursor:pointer;transition:.15s}
+  .via-pill.active{color:#fff;border-color:var(--vc,#9B8BFF);background:rgba(var(--vcr,155,139,255),.22)}
   .via-pill:hover:not(.active){color:var(--fg-dim);border-color:var(--line-s)}
-  .via-cards{flex:1;overflow-y:auto;display:grid;grid-template-columns:1fr 1fr;gap:3px;align-content:start}
-  .via-cards::-webkit-scrollbar{width:2px}.via-cards::-webkit-scrollbar-thumb{background:var(--line-s)}
-  .via-card{padding:5px 6px;background:var(--panel);border:1px solid var(--line);
-    border-left:2px solid var(--vc,var(--line));cursor:pointer;transition:.15s;text-align:left}
-  .via-card:hover,.via-card.selected{background:rgba(var(--vcr,155,139,255),.18);border-left-color:var(--vc)}
-  .via-card .vvk{font-family:var(--font-d);font-size:7.5px;color:var(--vc);letter-spacing:.08em}
-  .via-card .vvj{font-size:10px;line-height:1.25;margin:1px 0 0;color:var(--fg)}
-  .via-card .vve{font-size:7px;color:var(--fg-faint);letter-spacing:.05em;line-height:1.3}
+
+  /* 24のキャラクターカード */
+  .via-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(104px,1fr));gap:6px}
+  .via-card{position:relative;padding:13px 8px 10px;background:var(--panel);border:1px solid var(--line);
+    border-top:2px solid var(--vc,var(--line));cursor:pointer;transition:.16s;text-align:center;
+    display:flex;flex-direction:column;align-items:center;gap:2px;min-width:0}
+  .via-card:hover,.via-card.selected{background:rgba(var(--vcr,155,139,255),.16);
+    border-color:var(--vc);transform:translateY(-2px)}
+  .via-card .vvk{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-size:30px;line-height:1.05;
+    color:var(--vc);font-weight:400}
+  .via-card .vvj{font-size:11px;line-height:1.4;color:var(--fg);margin-top:3px;word-break:keep-all}
+  .via-card .vve{font-family:var(--font-d);font-size:7px;letter-spacing:.10em;color:var(--fg-faint);
+    text-transform:uppercase;line-height:1.35;overflow-wrap:anywhere}
+  .via-card .vvt{display:flex;flex-wrap:wrap;gap:3px;justify-content:center;margin-top:auto;padding-top:7px}
+  .via-card .vvt span{font-family:var(--font-d);font-size:6px;letter-spacing:.06em;padding:1.5px 4px;
+    border:1px solid rgba(var(--vcr,155,139,255),.4);color:var(--vc);max-width:100%;overflow:hidden}
+  .via-card .vvt span.reg{border-color:var(--line);color:var(--fg-faint)}
+
+  /* 2因子マップ */
+  .factor-wrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:clamp(20px,3vw,44px);
+    align-items:start}
+  .factor-note{display:flex;flex-direction:column;gap:14px}
+  .factor-axes{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .factor-axes div{border:1px solid var(--line);padding:9px 11px;background:var(--panel)}
+  .factor-axes .al{font-family:var(--font-d);font-size:7.5px;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--fg-faint);margin-bottom:3px}
+  .factor-axes .av{font-size:11px;color:var(--fg-dim);line-height:1.6}
+  .factor-map-wrap{padding:12px;background:var(--panel);border:1px solid var(--line);backdrop-filter:blur(9px);
+    max-width:560px;margin-left:auto}
+  #viaMap{display:block;width:100%;height:auto;cursor:default}
+  .factor-legend{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:12px;padding-top:11px;
+    border-top:1px solid var(--line)}
+  .factor-legend span{display:inline-flex;align-items:center;gap:6px;font-size:10px;color:var(--fg-dim)}
+  .factor-legend i{width:7px;height:7px;border-radius:50%;flex:none}
+  .factor-legend b{font-family:var(--font-d);font-size:8px;letter-spacing:.10em;color:var(--fg-faint);font-weight:400}
+
+  @media (max-width:820px){
+    .factor-wrap{grid-template-columns:1fr}
+    .via-cards{grid-template-columns:repeat(auto-fit,minmax(92px,1fr))}
+  }
   /* VIA detail modal */
-  .via-modal{position:absolute;z-index:300;left:50%;top:50%;transform:translate(-50%,-50%);
+  .via-modal{position:fixed;z-index:300;left:50%;top:50%;transform:translate(-50%,-50%);
     width:min(320px,88vw);max-height:68vh;overflow-y:auto;
     background:rgba(6,12,26,.97);border:1px solid var(--line-s);backdrop-filter:blur(20px);
     padding:18px 20px;display:none}
@@ -207,11 +241,6 @@
     </div>
 
     <div class="rpanel">
-      <div class="rpanel-tabs">
-        <button class="rpanel-tab active" data-pane="neural">Neural 神経</button>
-        <button class="rpanel-tab" data-pane="via">VIA 徳性</button>
-      </div>
-
       <div id="pane-neural">
       <div class="readout">
         <h2>Cortical Activity <span style="font-family:var(--font-u);letter-spacing:.08em">皮質活動</span></h2>
@@ -255,14 +284,6 @@
       </div>
       </div><!-- /pane-neural -->
 
-      <div class="via-panel" id="pane-via">
-        <div class="via-map-wrap">
-          <div class="via-head"><span>2-Factor Map</span><span id="viaMapHint" style="font-family:var(--font-u);letter-spacing:.04em;text-transform:none;font-size:9px">24の強み</span></div>
-          <canvas id="viaMap" height="118"></canvas>
-        </div>
-        <div class="via-filters" id="viaFilters"></div>
-        <div class="via-cards" id="viaCards"></div>
-      </div>
     </div>
 
     <nav class="legend" aria-label="思考領域">
@@ -290,6 +311,49 @@
     <p class="hint" id="hint">Drag to rotate · Scroll to zoom<span>ドラッグで回転・ホイールで拡大</span></p>
   </div>
 
+</div><!-- /stage -->
+
+<!-- ══ 設計図2 ══ 24のすとれんぐキャラクター ══════════════════ -->
+<section class="sheet" id="sheet-strengths">
+  <div class="sheet-head">
+    <p class="sheet-eyebrow">VIA · Character Strengths</p>
+    <h2 class="sheet-title">24のすとれんぐキャラクター</h2>
+    <p class="sheet-lede">VIA研究所が定義する24の性格の強みを、それぞれ固有のキャラクターとして配置。6つの<em>徳性</em>に分類され、各強みは対応する<em>脳領域</em>に紐づく。カードをクリックすると詳細が開き、その領域が脳内で分離表示される。</p>
+  </div>
+  <div class="sheet-body">
+    <div class="via-filters" id="viaFilters"></div>
+    <div class="via-cards" id="viaCards"></div>
+  </div>
+</section>
+
+<!-- ══ 設計図3 ══ VIA 2因子バランスマップ ════════════════════ -->
+<section class="sheet" id="sheet-factor">
+  <div class="sheet-head">
+    <p class="sheet-eyebrow">2-Factor Map</p>
+    <h2 class="sheet-title">VIA 2因子バランスマップ</h2>
+    <p class="sheet-lede">24の強みを「<em>個人内 ⇄ 個人間</em>」「<em>感情（心） ⇄ 理性（頭）</em>」の2軸でマッピング。書籍の2因子バランスグラフを再現し、強みの活用シナリオを視覚的に把握できる。</p>
+  </div>
+  <div class="sheet-body">
+    <div class="factor-wrap">
+      <div class="factor-note">
+        <div class="factor-axes">
+          <div><div class="al">Intrapersonal 縦軸 ↑</div><div class="av">個人内 — 自分自身へ向かう強み。内省し、律し、意味を見出す。</div></div>
+          <div><div class="al">Interpersonal 縦軸 ↓</div><div class="av">個人間 — 他者へ向かう強み。関わり、支え、まとめる。</div></div>
+          <div><div class="al">Emotional 横軸 ←</div><div class="av">感情（心） — 心が動くことを起点に働く強み。</div></div>
+          <div><div class="al">Rational 横軸 →</div><div class="av">理性（頭） — 筋道を立てることを起点に働く強み。</div></div>
+        </div>
+        <div class="factor-legend" id="viaLegend" style="border-top:0;padding-top:0;margin-top:2px"></div>
+      </div>
+      <div>
+        <div class="factor-map-wrap">
+          <canvas id="viaMap"></canvas>
+        </div>
+        <p class="sheet-lede" id="viaMapHint" style="font-size:10px;margin:9px 0 0;color:var(--fg-faint);text-align:right;max-width:560px;margin-left:auto">24の強み</p>
+      </div>
+    </div>
+  </div>
+</section>
+
   <div class="via-modal" id="viaModal" role="dialog" aria-modal="true" aria-labelledby="vm-title">
     <div class="via-modal-head">
       <div>
@@ -313,8 +377,6 @@
     <div class="vm-tags" id="vm-tags"></div>
     <div class="vm-brain" id="vm-brain"></div>
   </div>
-
-</div>
 
 <script>
 (()=>{
@@ -934,41 +996,76 @@ const S=[
 const $=id=>document.getElementById(id);
 const mapC=$('viaMap'),mapX=mapC.getContext('2d');
 let filter=null,sel=null;
-const PAD=17;
-let mw=0,mh=118;
-const mpx=x=>PAD+(x+1)/2*(mw-PAD*2);
-const mpy=y=>PAD+(1-y)/2*(mh-PAD*2);
+const PAD=34;
+let mw=0,mh=0,side=0,ox=0,oy=0;
+
+// 設計図3の軸：横 = 感情(-1)⇄理性(+1)、縦 = 個人間(-1)⇄個人内(+1)
+// データは 内向⇄対人(x) / 感情⇄理性(y) 持ちなので、ここで向きを合わせる
+const fx=s=>s.y;
+const fy=s=>-s.x;
+const mpx=v=>ox+(v+1)/2*side;
+const mpy=v=>oy+(1-v)/2*side;
 
 function sizeMap(){
   const r=mapC.getBoundingClientRect();if(!r.width)return false;
   const d=Math.min(window.devicePixelRatio||1,2);
-  mw=r.width;mh=118;
+  mw=r.width;mh=Math.min(r.width,560);
+  mapC.style.height=mh+'px';
   mapC.width=Math.round(mw*d);mapC.height=Math.round(mh*d);
-  mapX.setTransform(d,0,0,d,0,0);return true;}
+  mapX.setTransform(d,0,0,d,0,0);
+  side=Math.min(mw,mh)-PAD*2;            // 2軸を同じ尺度で読ませる
+  ox=(mw-side)/2;oy=(mh-side)/2;
+  return true;}
 
 function drawMap(){
   if(!sizeMap())return;
   mapX.clearRect(0,0,mw,mh);
-  mapX.strokeStyle='rgba(150,182,214,.13)';mapX.lineWidth=.5;
-  mapX.beginPath();mapX.moveTo(PAD-6,mpy(0));mapX.lineTo(mw-PAD+6,mpy(0));
-  mapX.moveTo(mpx(0),PAD-6);mapX.lineTo(mpx(0),mh-PAD+6);mapX.stroke();
-  mapX.fillStyle='rgba(120,150,185,.42)';
-  mapX.font='6px Bahnschrift,"DIN Alternate",system-ui';mapX.letterSpacing='.10em';
-  mapX.textAlign='left';mapX.fillText('内向',2,mpy(0)-4);
-  mapX.textAlign='right';mapX.fillText('対人',mw-2,mpy(0)-4);
-  mapX.textAlign='center';mapX.fillText('理性',mpx(0),7);mapX.fillText('感情',mpx(0),mh-1);
+
+  // 四象限
+  mapX.strokeStyle='rgba(150,182,214,.07)';mapX.lineWidth=.5;
+  mapX.strokeRect(ox,oy,side,side);
+  mapX.strokeStyle='rgba(150,182,214,.15)';
+  mapX.beginPath();
+  mapX.moveTo(ox-8,mpy(0));mapX.lineTo(ox+side+8,mpy(0));
+  mapX.moveTo(mpx(0),oy-8);mapX.lineTo(mpx(0),oy+side+8);
+  mapX.stroke();
+
+  mapX.font='7px Bahnschrift,"DIN Alternate",system-ui';
+  mapX.letterSpacing='.12em';
+  mapX.fillStyle='rgba(120,150,185,.26)';
+  mapX.textAlign='center';mapX.textBaseline='middle';
+  mapX.fillText('INTRAPERSONAL × EMOTIONAL',ox+side*.25,oy+side*.12);
+  mapX.fillText('INTRAPERSONAL × RATIONAL', ox+side*.75,oy+side*.12);
+  mapX.fillText('INTERPERSONAL × EMOTIONAL',ox+side*.25,oy+side*.88);
+  mapX.fillText('INTERPERSONAL × RATIONAL', ox+side*.75,oy+side*.88);
+
+  // 軸の銘
+  mapX.fillStyle='rgba(140,170,205,.6)';
+  mapX.font='8.5px "Segoe UI","Hiragino Sans",system-ui';
+  mapX.fillText('個人内 Intrapersonal',mpx(0),oy-17);
+  mapX.fillText('個人間 Interpersonal',mpx(0),oy+side+17);
+  mapX.save();
+  mapX.translate(ox-17,mpy(0));mapX.rotate(-Math.PI/2);
+  mapX.fillText('感情（心） Emotional',0,0);
+  mapX.restore();
+  mapX.save();
+  mapX.translate(ox+side+17,mpy(0));mapX.rotate(Math.PI/2);
+  mapX.fillText('理性（頭） Rational',0,0);
+  mapX.restore();
   mapX.letterSpacing='0px';
+
   for(const s of S){
     const V=VIRTUE[s.v],dim=filter&&s.v!==filter,on=sel===s;
-    const X=mpx(s.x),Y=mpy(s.y);
-    if(on){mapX.globalAlpha=.5;mapX.strokeStyle=V.hex;mapX.lineWidth=1;
-      mapX.beginPath();mapX.arc(X,Y,6.5,0,Math.PI*2);mapX.stroke();}
-    mapX.globalAlpha=dim?.13:(on?1:.8);
+    const X=mpx(fx(s)),Y=mpy(fy(s));
+    if(on){mapX.globalAlpha=.55;mapX.strokeStyle=V.hex;mapX.lineWidth=1;
+      mapX.beginPath();mapX.arc(X,Y,11,0,Math.PI*2);mapX.stroke();}
+    mapX.globalAlpha=dim?.12:(on?1:.85);
     mapX.fillStyle=V.hex;
-    mapX.beginPath();mapX.arc(X,Y,on?3.6:2.4,0,Math.PI*2);mapX.fill();
-    if(!dim){mapX.globalAlpha=on?1:.62;mapX.fillStyle=on?'#fff':V.hex;
-      mapX.font=`${on?8:6.8}px "Segoe UI","Hiragino Sans",system-ui`;
-      mapX.textAlign='center';mapX.fillText(s.k,X,Y-5);}}
+    mapX.beginPath();mapX.arc(X,Y,on?6:4.4,0,Math.PI*2);mapX.fill();
+    if(!dim){mapX.globalAlpha=on?1:.72;mapX.fillStyle=on?'#fff':V.hex;
+      mapX.font=`${on?11:9.5}px "Hiragino Mincho ProN","Yu Mincho",serif`;
+      mapX.textAlign='center';mapX.textBaseline='middle';
+      mapX.fillText(s.k,X,Y-11);}}
   mapX.globalAlpha=1;}
 
 function hitMap(e){
@@ -976,9 +1073,9 @@ function hitMap(e){
   const x=e.clientX-r.left,y=e.clientY-r.top;
   let best=null,bd=Infinity;
   for(const s of S){if(filter&&s.v!==filter)continue;
-    const dx=x-mpx(s.x),dy=y-mpy(s.y),d=dx*dx+dy*dy;
+    const dx=x-mpx(fx(s)),dy=y-mpy(fy(s)),d=dx*dx+dy*dy;
     if(d<bd){bd=d;best=s;}}
-  return bd<190?best:null;}
+  return bd<400?best:null;}
 
 function renderCards(){
   const box=$('viaCards');box.innerHTML='';
@@ -988,7 +1085,9 @@ function renderCards(){
     const b=document.createElement('button');
     b.className='via-card'+(sel===s?' selected':'');
     b.style.setProperty('--vc',V.hex);b.style.setProperty('--vcr',V.rgb);
-    b.innerHTML=`<div class="vvk">${s.k} ${V.jp}</div><div class="vvj">${s.jp}</div><div class="vve">${s.en}</div>`;
+    b.innerHTML=`<div class="vvk">${s.k}</div><div class="vvj">${s.jp}</div>`
+      +`<div class="vve">${s.en}</div>`
+      +`<div class="vvt"><span>${V.jp}</span><span class="reg">${V.regJp.split(' / ')[0]||V.regJp}</span></div>`;
     b.addEventListener('click',()=>open(s));
     box.appendChild(b);}
   $('viaMapHint').textContent=`${list.length}の強み`;}
@@ -1040,18 +1139,15 @@ mapC.addEventListener('mousemove',e=>{mapC.style.cursor=hitMap(e)?'pointer':'def
 $('vm-close').addEventListener('click',close);
 addEventListener('keydown',e=>{if(e.key==='Escape'&&$('viaModal').classList.contains('show'))close();});
 
-// tabs
-const panes={neural:$('pane-neural'),via:$('pane-via')};
-document.querySelectorAll('.rpanel-tab').forEach(tab=>{
-  tab.addEventListener('click',()=>{
-    const p=tab.dataset.pane;
-    document.querySelectorAll('.rpanel-tab').forEach(t=>t.classList.toggle('active',t===tab));
-    panes.neural.style.display=p==='neural'?'flex':'none';
-    panes.via.classList.toggle('show',p==='via');
-    if(p==='via')requestAnimationFrame(drawMap);
-    else{if(window._isolateRegion&&!filter&&!sel)window._isolateRegion(-1);}});});
+// 徳性の凡例
+const legend=$('viaLegend');
+for(const [k,V] of Object.entries(VIRTUE)){
+  const el=document.createElement('span');
+  el.innerHTML=`<i style="background:${V.hex}"></i>${V.jp}<b>${V.en}</b>`;
+  legend.appendChild(el);}
 
 renderCards();
-new ResizeObserver(()=>{if(panes.via.classList.contains('show'))drawMap();}).observe(mapC);
+requestAnimationFrame(drawMap);
+new ResizeObserver(()=>drawMap()).observe(mapC);
 })();
 </script>
