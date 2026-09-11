@@ -137,6 +137,55 @@
     font-size:9.5px;letter-spacing:.2em;color:var(--fg-faint);text-transform:uppercase;pointer-events:none;transition:opacity .5s;text-align:center}
   .hint span{display:block;margin-top:4px;font-family:var(--font-u);font-size:10.5px;letter-spacing:.05em;text-transform:none}
   .hint.gone{opacity:0}
+
+  /* ── VIA CHARACTER STRENGTHS ── */
+  .rpanel-tabs{display:flex;border-bottom:1px solid var(--line);flex-shrink:0}
+  .rpanel-tab{flex:1;padding:6px 0;background:none;border:0;border-bottom:2px solid transparent;
+    font-family:var(--font-d);font-size:8.5px;letter-spacing:.22em;color:var(--fg-faint);
+    text-transform:uppercase;cursor:pointer;transition:.18s;margin-bottom:-1px}
+  .rpanel-tab.active{color:#9B8BFF;border-bottom-color:#9B8BFF}
+  .rpanel-tab:hover:not(.active){color:var(--fg-dim)}
+  #pane-neural{display:flex;flex-direction:column;gap:10px;flex:1;overflow:hidden}
+  .via-panel{display:none;flex-direction:column;gap:7px;flex:1;overflow:hidden}
+  .via-panel.show{display:flex}
+  .via-map-wrap{padding:9px 11px 8px;background:var(--panel);border:1px solid var(--line);backdrop-filter:blur(9px);flex-shrink:0}
+  .via-map-wrap .via-head{font-family:var(--font-d);font-size:8.5px;letter-spacing:.22em;color:var(--fg-dim);text-transform:uppercase;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center}
+  #viaMap{display:block;width:100%;height:118px}
+  .via-filters{display:flex;flex-wrap:wrap;gap:3px;flex-shrink:0}
+  .via-pill{padding:2.5px 7px;background:none;border:1px solid var(--line);color:var(--fg-faint);
+    font-family:var(--font-d);font-size:7.5px;letter-spacing:.10em;cursor:pointer;transition:.15s}
+  .via-pill.active{color:#fff;border-color:var(--vc,#9B8BFF);background:rgba(var(--vcr,155,139,255),.25)}
+  .via-pill:hover:not(.active){color:var(--fg-dim);border-color:var(--line-s)}
+  .via-cards{flex:1;overflow-y:auto;display:grid;grid-template-columns:1fr 1fr;gap:3px;align-content:start}
+  .via-cards::-webkit-scrollbar{width:2px}.via-cards::-webkit-scrollbar-thumb{background:var(--line-s)}
+  .via-card{padding:5px 6px;background:var(--panel);border:1px solid var(--line);
+    border-left:2px solid var(--vc,var(--line));cursor:pointer;transition:.15s;text-align:left}
+  .via-card:hover,.via-card.selected{background:rgba(var(--vcr,155,139,255),.18);border-left-color:var(--vc)}
+  .via-card .vvk{font-family:var(--font-d);font-size:7.5px;color:var(--vc);letter-spacing:.08em}
+  .via-card .vvj{font-size:10px;line-height:1.25;margin:1px 0 0;color:var(--fg)}
+  .via-card .vve{font-size:7px;color:var(--fg-faint);letter-spacing:.05em;line-height:1.3}
+  /* VIA detail modal */
+  .via-modal{position:absolute;z-index:300;left:50%;top:50%;transform:translate(-50%,-50%);
+    width:min(320px,88vw);max-height:68vh;overflow-y:auto;
+    background:rgba(6,12,26,.97);border:1px solid var(--line-s);backdrop-filter:blur(20px);
+    padding:18px 20px;display:none}
+  .via-modal.show{display:block}
+  .via-modal-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:4px}
+  .vm-title{font-size:22px;font-weight:300;line-height:1;letter-spacing:.02em}
+  .vm-close{background:none;border:0;color:var(--fg-faint);font-size:14px;cursor:pointer;padding:2px;flex-shrink:0}
+  .vm-close:hover{color:var(--fg)}
+  .vm-badge{display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border:1px solid var(--vc,#9B8BFF);
+    font-family:var(--font-d);font-size:7.5px;letter-spacing:.16em;color:var(--vc,#9B8BFF);margin-bottom:11px}
+  .vm-def{font-size:11.5px;line-height:1.8;color:var(--fg-dim);margin-bottom:12px;border-left:1px solid var(--line);padding-left:10px}
+  .vm-zones{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:12px}
+  .vm-zone{padding:7px 9px;border:1px solid var(--line)}
+  .vm-zone-lbl{font-family:var(--font-d);font-size:7px;letter-spacing:.18em;color:var(--fg-faint);text-transform:uppercase;margin-bottom:3px}
+  .vm-zone-val{font-size:10px;color:var(--fg-dim);line-height:1.5}
+  .vm-rel-lbl{font-family:var(--font-d);font-size:7.5px;letter-spacing:.16em;color:var(--fg-faint);text-transform:uppercase;margin-bottom:5px}
+  .vm-tags{display:flex;flex-wrap:wrap;gap:3px}
+  .vm-tag{padding:2px 7px;border:1px solid var(--line);font-size:9px;color:var(--fg-dim);cursor:pointer;transition:.12s;background:none}
+  .vm-tag:hover{border-color:var(--line-s);color:var(--fg)}
+  .vm-brain{font-family:var(--font-d);font-size:7px;letter-spacing:.16em;color:var(--fg-faint);text-transform:uppercase;margin-top:11px;padding-top:9px;border-top:1px solid var(--line)}
 </style>
 
 <div class="stage" id="stage">
@@ -158,6 +207,12 @@
     </div>
 
     <div class="rpanel">
+      <div class="rpanel-tabs">
+        <button class="rpanel-tab active" data-pane="neural">Neural 神経</button>
+        <button class="rpanel-tab" data-pane="via">VIA 徳性</button>
+      </div>
+
+      <div id="pane-neural">
       <div class="readout">
         <h2>Cortical Activity <span style="font-family:var(--font-u);letter-spacing:.08em">皮質活動</span></h2>
         <canvas id="eeg"></canvas>
@@ -198,6 +253,16 @@
           <button id="sbtn">SEND</button>
         </div>
       </div>
+      </div><!-- /pane-neural -->
+
+      <div class="via-panel" id="pane-via">
+        <div class="via-map-wrap">
+          <div class="via-head"><span>2-Factor Map</span><span id="viaMapHint" style="font-family:var(--font-u);letter-spacing:.04em;text-transform:none;font-size:9px">24の強み</span></div>
+          <canvas id="viaMap" height="118"></canvas>
+        </div>
+        <div class="via-filters" id="viaFilters"></div>
+        <div class="via-cards" id="viaCards"></div>
+      </div>
     </div>
 
     <nav class="legend" aria-label="思考領域">
@@ -223,6 +288,30 @@
     </nav>
 
     <p class="hint" id="hint">Drag to rotate · Scroll to zoom<span>ドラッグで回転・ホイールで拡大</span></p>
+  </div>
+
+  <div class="via-modal" id="viaModal" role="dialog" aria-modal="true" aria-labelledby="vm-title">
+    <div class="via-modal-head">
+      <div>
+        <div class="vm-title" id="vm-title"></div>
+      </div>
+      <button class="vm-close" id="vm-close" aria-label="閉じる">✕</button>
+    </div>
+    <div class="vm-badge" id="vm-badge"></div>
+    <div class="vm-def" id="vm-def"></div>
+    <div class="vm-zones">
+      <div class="vm-zone">
+        <div class="vm-zone-lbl">Underuse 不足</div>
+        <div class="vm-zone-val" id="vm-under"></div>
+      </div>
+      <div class="vm-zone">
+        <div class="vm-zone-lbl">Overuse 過剰</div>
+        <div class="vm-zone-val" id="vm-over"></div>
+      </div>
+    </div>
+    <div class="vm-rel-lbl">相関する強み Correlated</div>
+    <div class="vm-tags" id="vm-tags"></div>
+    <div class="vm-brain" id="vm-brain"></div>
   </div>
 
 </div>
@@ -541,6 +630,7 @@ document.querySelectorAll('[data-view]').forEach(btn=>{
   btn.addEventListener('click',()=>{const[y1,p1]=VIEWS[btn.dataset.view];const turns=Math.round((view.yaw-y1)/(Math.PI*2));tween={t:0,y0:view.yaw,y1:y1+turns*Math.PI*2,p0:view.pitch,p1};view.auto=false;autoBtn.setAttribute('aria-pressed','false');autoBtn.lastChild.textContent='停止';hint.classList.add('gone');});});
 const regBtns=[...document.querySelectorAll('.reg')];
 regBtns.forEach(btn=>{btn.addEventListener('click',()=>{const r=Number(btn.dataset.region);view.isolate=view.isolate===r?-1:r;regBtns.forEach(b=>b.setAttribute('aria-pressed',String(Number(b.dataset.region)===view.isolate)));});});
+window._isolateRegion=r=>{view.isolate=r;regBtns.forEach(b=>b.setAttribute('aria-pressed',String(Number(b.dataset.region)===r)));};
 
 document.getElementById('s-nodes').textContent=COUNT.toLocaleString('en-US');
 document.getElementById('s-edges').textContent=EDGES.toLocaleString('en-US');
@@ -693,7 +783,7 @@ function drawOrb(){
     for(let i=0;i<n;i++){
       const angle=baseRot+(i/n)*Math.PI*2;
       const lw=l*(1+.055*Math.sin(orbT*2.6+i*1.2+ph));
-      const col=RAINBOW[(colOffset+i)%RAINBOW.length];
+      const col=RAINBOW[((colOffset+i)%RAINBOW.length+RAINBOW.length)%RAINBOW.length];
       oc.save();oc.translate(CX,CY);oc.rotate(angle);
       drawPetal(lw,w,col,alpha);
       oc.restore();}});
@@ -797,5 +887,171 @@ raf=requestAnimationFrame(drawOrb);
 
 (async()=>{try{if(window.claude)voiceSample=await window.claude.use('sample');}catch(_){}})();
 if(synth){synth.getVoices();synth.addEventListener('voiceschanged',()=>synth.getVoices());}
+})();
+
+// ── VIA CHARACTER STRENGTHS ─────────────────────────────────────
+(()=>{
+'use strict';
+
+// 6 virtues → brain region index (0 FRONTAL, 1 PARIETAL, 2 TEMPORAL, 3 OCCIPITAL, 4 CEREBELLUM, 5 BRAINSTEM)
+const VIRTUE={
+  wis:{jp:'知恵',en:'Wisdom',hex:'#9B8BFF',rgb:'155,139,255',reg:0,regJp:'技術 / FRONTAL'},
+  cou:{jp:'勇気',en:'Courage',hex:'#FF5A72',rgb:'255,90,114',reg:1,regJp:'学習 / PARIETAL'},
+  tra:{jp:'超越性',en:'Transcendence',hex:'#C07CF0',rgb:'192,124,240',reg:2,regJp:'アイデア / TEMPORAL'},
+  tem:{jp:'節制',en:'Temperance',hex:'#3CC870',rgb:'60,200,112',reg:3,regJp:'目標 / OCCIPITAL'},
+  hum:{jp:'人間性',en:'Humanity',hex:'#FF8B5C',rgb:'255,139,92',reg:4,regJp:'感情 / CEREBELLUM'},
+  jus:{jp:'正義',en:'Justice',hex:'#38A8E0',rgb:'56,168,224',reg:5,regJp:'人間関係 / BRAINSTEM'},
+};
+
+// x: 内向(-1) ↔ 対人(+1)   y: 感情(-1) ↔ 理性(+1)
+const S=[
+{k:'創',jp:'創造性',en:'Creativity',v:'wis',x:-.56,y:.24,def:'独自性と実用性を兼ね備えた新しいものを生み出す力。既存の枠に収まらない発想で問題を解く。',under:'守旧・発想の停滞',over:'奇抜さが独走し実用を失う',top:['好奇心','勇敢さ','大局観','熱意']},
+{k:'好',jp:'好奇心',en:'Curiosity',v:'wis',x:-.44,y:.08,def:'新しい経験・知識・アイデアへ開かれた関心。曖昧さを楽しみ、探索そのものに喜びを見出す。',under:'無関心・退屈',over:'気が散る・深掘り不足',top:['創造性','向学心','大局観','熱意']},
+{k:'判',jp:'判断力',en:'Judgment',v:'wis',x:-.28,y:.72,def:'物事を多角的に検討し、証拠に基づいて結論を出す。自分の信念すら検証対象にする。',under:'優柔不断・鵜呑み',over:'懐疑が過剰で決めきれない',top:['向学心','大局観','誠実さ','思慮深さ']},
+{k:'向',jp:'向学心',en:'Love of Learning',v:'wis',x:-.58,y:.52,def:'スキルと知識の習得そのものに情熱を持つ。学ぶ過程が報酬になる。',under:'惰性・機械的作業',over:'知識の披瀝・実践の欠如',top:['好奇心','判断力','創造性','誠実さ']},
+{k:'観',jp:'大局観',en:'Perspective',v:'wis',x:-.18,y:.58,def:'自分と他者の双方にとって意味のある視座を提供する。部分と全体を同時に見る力。',under:'視野の狭さ・短絡',over:'説教的・上から目線',top:['判断力','誠実さ','向学心','社会的知性']},
+{k:'敢',jp:'勇敢さ',en:'Bravery',v:'cou',x:-.38,y:.65,def:'脅威・困難・反対に怯まず、正しいと信じることを行う。恐れの不在ではなく、恐れの中での行動。',under:'臆病・回避',over:'無謀・リスク軽視',top:['誠実さ','粘り強さ','熱意','大局観']},
+{k:'粘',jp:'粘り強さ',en:'Perseverance',v:'cou',x:.22,y:.62,def:'始めたことを完遂する力。障害があっても軌道修正しながら前進し続ける。',under:'怠惰・途中放棄',over:'撤退できない・固執',top:['熱意','希望','勇敢さ','誠実さ']},
+{k:'誠',jp:'誠実さ',en:'Honesty',v:'cou',x:.32,y:.55,def:'真実を語り、自分の感情と行動に責任を持つ。演じるのではなく、そのまま在る。',under:'欺瞞・見栄',over:'無遠慮・配慮の欠如',top:['勇敢さ','大局観','公平さ','自律']},
+{k:'熱',jp:'熱意',en:'Zest',v:'cou',x:-.10,y:.32,def:'活力をもって人生に取り組む。中途半端にせず、全身で関わる。',under:'無気力・疲弊',over:'燃え尽き・過活動',top:['希望','感謝','好奇心','愛情']},
+{k:'愛',jp:'愛情',en:'Love',v:'hum',x:.68,y:-.42,def:'他者との深い相互的な絆を築き、大切にする。与えることも受け取ることもできる。',under:'孤立・親密さの回避',over:'依存・境界の消失',top:['親切心','感謝','熱意','チームワーク']},
+{k:'親',jp:'親切心',en:'Kindness',v:'hum',x:.52,y:.18,def:'見返りを求めず他者のために行動する。思いやりを行為に変える。',under:'冷淡・無関心',over:'過干渉・自己犠牲',top:['愛情','感謝','公平さ','チームワーク']},
+{k:'社',jp:'社会的知性',en:'Social Intelligence',v:'hum',x:-.22,y:-.52,def:'自分と他者の感情や動機を読み取り、場に応じて適切に振る舞う。',under:'場の読めなさ',over:'読みすぎ・操作的',top:['大局観','愛情','親切心','寛容さ']},
+{k:'団',jp:'チームワーク',en:'Teamwork',v:'jus',x:.65,y:.58,def:'集団の一員として忠実に役割を果たす。自分の成功より共同の成果を優先できる。',under:'個人プレー・非協力',over:'同調圧力への服従',top:['公平さ','リーダーシップ','親切心','感謝']},
+{k:'公',jp:'公平さ',en:'Fairness',v:'jus',x:.72,y:.52,def:'すべての人を偏りなく扱う。感情や利害に左右されず原則に基づいて判断する。',under:'えこひいき・偏見',over:'杓子定規・文脈無視',top:['チームワーク','誠実さ','リーダーシップ','寛容さ']},
+{k:'導',jp:'リーダーシップ',en:'Leadership',v:'jus',x:.52,y:.30,def:'集団の活動を組織し、メンバーが力を発揮できるよう動かす。良い関係を保ちながら成果を出す。',under:'放任・責任回避',over:'支配的・統制過多',top:['公平さ','チームワーク','社会的知性','熱意']},
+{k:'寛',jp:'寛容さ',en:'Forgiveness',v:'tem',x:.58,y:.42,def:'過ちを犯した人を許し、報復を手放す。人は変われると信じる。',under:'恨みの保持・報復',over:'甘さ・責任の免除',top:['謙虚さ','社会的知性','愛情','感謝']},
+{k:'謙',jp:'謙虚さ',en:'Humility',v:'tem',x:.80,y:.62,def:'成果を誇示せず、自分を等身大に見る。自分を低く見るのではなく、自分にこだわらない。',under:'傲慢・自己過信',over:'自己卑下・過小評価',top:['寛容さ','感謝','思慮深さ','誠実さ']},
+{k:'慮',jp:'思慮深さ',en:'Prudence',v:'tem',x:.55,y:.52,def:'選択に慎重で、不要なリスクを避ける。長期の結果を見据えて今を決める。',under:'衝動的・無計画',over:'慎重すぎて機会を逃す',top:['自律','謙虚さ','判断力','誠実さ']},
+{k:'律',jp:'自律',en:'Self-Regulation',v:'tem',x:-.08,y:-.32,def:'感情・欲求・行動を自ら調整する。衝動ではなく選択で動く。',under:'自制の欠如・過剰行動',over:'禁欲的・硬直',top:['思慮深さ','粘り強さ','誠実さ','謙虚さ']},
+{k:'美',jp:'審美眼',en:'Appreciation of Beauty',v:'tra',x:-.48,y:.12,def:'自然・芸術・技巧・卓越性に美を見出し、感動する。日常の中の質に気づく。',under:'鑑賞力の鈍麻',over:'完璧主義・批評家気質',top:['感謝','好奇心','創造性','希望']},
+{k:'謝',jp:'感謝',en:'Gratitude',v:'tra',x:.40,y:.02,def:'良いことに気づき、それを当然と思わない。受け取ったものを言葉と行動で返す。',under:'不満・当然視',over:'形式的な感謝の反復',top:['審美眼','希望','愛情','親切心']},
+{k:'望',jp:'希望',en:'Hope',v:'tra',x:-.08,y:.44,def:'良い未来を期待し、それを実現する道筋を描いて動く。楽観と行動が結びついている。',under:'悲観・無力感',over:'現実を見ない楽観',top:['熱意','感謝','粘り強さ','勇敢さ']},
+{k:'笑',jp:'ユーモア',en:'Humor',v:'tra',x:.62,y:-.50,def:'遊び心をもって物事に向き合い、他者に笑いをもたらす。緊張を緩める力。',under:'深刻すぎる・硬さ',over:'茶化し・逃避',top:['社会的知性','愛情','好奇心','熱意']},
+{k:'霊',jp:'超越',en:'Spirituality',v:'tra',x:.30,y:.60,def:'より大きな全体の中での自分の位置を感じ、人生の意味と目的を持つ。',under:'虚無感・意味の喪失',over:'教条的・現実離れ',top:['感謝','審美眼','希望','寛容さ']},
+];
+
+const $=id=>document.getElementById(id);
+const mapC=$('viaMap'),mapX=mapC.getContext('2d');
+let filter=null,sel=null;
+const PAD=17;
+let mw=0,mh=118;
+const mpx=x=>PAD+(x+1)/2*(mw-PAD*2);
+const mpy=y=>PAD+(1-y)/2*(mh-PAD*2);
+
+function sizeMap(){
+  const r=mapC.getBoundingClientRect();if(!r.width)return false;
+  const d=Math.min(window.devicePixelRatio||1,2);
+  mw=r.width;mh=118;
+  mapC.width=Math.round(mw*d);mapC.height=Math.round(mh*d);
+  mapX.setTransform(d,0,0,d,0,0);return true;}
+
+function drawMap(){
+  if(!sizeMap())return;
+  mapX.clearRect(0,0,mw,mh);
+  mapX.strokeStyle='rgba(150,182,214,.13)';mapX.lineWidth=.5;
+  mapX.beginPath();mapX.moveTo(PAD-6,mpy(0));mapX.lineTo(mw-PAD+6,mpy(0));
+  mapX.moveTo(mpx(0),PAD-6);mapX.lineTo(mpx(0),mh-PAD+6);mapX.stroke();
+  mapX.fillStyle='rgba(120,150,185,.42)';
+  mapX.font='6px Bahnschrift,"DIN Alternate",system-ui';mapX.letterSpacing='.10em';
+  mapX.textAlign='left';mapX.fillText('内向',2,mpy(0)-4);
+  mapX.textAlign='right';mapX.fillText('対人',mw-2,mpy(0)-4);
+  mapX.textAlign='center';mapX.fillText('理性',mpx(0),7);mapX.fillText('感情',mpx(0),mh-1);
+  mapX.letterSpacing='0px';
+  for(const s of S){
+    const V=VIRTUE[s.v],dim=filter&&s.v!==filter,on=sel===s;
+    const X=mpx(s.x),Y=mpy(s.y);
+    if(on){mapX.globalAlpha=.5;mapX.strokeStyle=V.hex;mapX.lineWidth=1;
+      mapX.beginPath();mapX.arc(X,Y,6.5,0,Math.PI*2);mapX.stroke();}
+    mapX.globalAlpha=dim?.13:(on?1:.8);
+    mapX.fillStyle=V.hex;
+    mapX.beginPath();mapX.arc(X,Y,on?3.6:2.4,0,Math.PI*2);mapX.fill();
+    if(!dim){mapX.globalAlpha=on?1:.62;mapX.fillStyle=on?'#fff':V.hex;
+      mapX.font=`${on?8:6.8}px "Segoe UI","Hiragino Sans",system-ui`;
+      mapX.textAlign='center';mapX.fillText(s.k,X,Y-5);}}
+  mapX.globalAlpha=1;}
+
+function hitMap(e){
+  const r=mapC.getBoundingClientRect();
+  const x=e.clientX-r.left,y=e.clientY-r.top;
+  let best=null,bd=Infinity;
+  for(const s of S){if(filter&&s.v!==filter)continue;
+    const dx=x-mpx(s.x),dy=y-mpy(s.y),d=dx*dx+dy*dy;
+    if(d<bd){bd=d;best=s;}}
+  return bd<190?best:null;}
+
+function renderCards(){
+  const box=$('viaCards');box.innerHTML='';
+  const list=S.filter(s=>!filter||s.v===filter);
+  for(const s of list){
+    const V=VIRTUE[s.v];
+    const b=document.createElement('button');
+    b.className='via-card'+(sel===s?' selected':'');
+    b.style.setProperty('--vc',V.hex);b.style.setProperty('--vcr',V.rgb);
+    b.innerHTML=`<div class="vvk">${s.k} ${V.jp}</div><div class="vvj">${s.jp}</div><div class="vve">${s.en}</div>`;
+    b.addEventListener('click',()=>open(s));
+    box.appendChild(b);}
+  $('viaMapHint').textContent=`${list.length}の強み`;}
+
+function open(s){
+  sel=s;const V=VIRTUE[s.v];
+  $('vm-title').textContent=s.jp;
+  $('vm-title').style.color=V.hex;
+  const badge=$('vm-badge');
+  badge.style.setProperty('--vc',V.hex);
+  badge.textContent=`${V.jp} ${V.en} · ${s.en}`;
+  $('vm-def').textContent=s.def;
+  $('vm-under').textContent=s.under;
+  $('vm-over').textContent=s.over;
+  const tags=$('vm-tags');tags.innerHTML='';
+  for(const n of s.top){
+    const t=document.createElement('button');t.className='vm-tag';t.textContent=n;
+    t.addEventListener('click',()=>{const f=S.find(z=>z.jp===n);if(f)open(f);});
+    tags.appendChild(t);}
+  $('vm-brain').textContent=`▸ 対応脳領域 ${V.regJp}`;
+  $('viaModal').classList.add('show');
+  if(window._isolateRegion)window._isolateRegion(V.reg);
+  renderCards();drawMap();}
+
+function close(){
+  $('viaModal').classList.remove('show');sel=null;
+  if(window._isolateRegion)window._isolateRegion(filter?VIRTUE[filter].reg:-1);
+  renderCards();drawMap();}
+
+// filter pills
+const pills=$('viaFilters');
+const mkPill=(label,key,hex,rgb)=>{
+  const b=document.createElement('button');
+  b.className='via-pill'+(key===null?' active':'');
+  b.style.setProperty('--vc',hex);b.style.setProperty('--vcr',rgb);
+  b.textContent=label;b.dataset.key=key===null?'':key;
+  b.addEventListener('click',()=>{
+    filter=(key!==null&&filter===key)?null:key;
+    [...pills.children].forEach(p=>p.classList.toggle('active',(p.dataset.key||null)===filter));
+    if(sel&&filter&&sel.v!==filter)sel=null;
+    if(window._isolateRegion)window._isolateRegion(filter?VIRTUE[filter].reg:-1);
+    renderCards();drawMap();});
+  pills.appendChild(b);};
+mkPill('ALL',null,'#9B8BFF','155,139,255');
+for(const [k,V] of Object.entries(VIRTUE))mkPill(V.jp,k,V.hex,V.rgb);
+
+mapC.addEventListener('click',e=>{const s=hitMap(e);if(s)open(s);});
+mapC.addEventListener('mousemove',e=>{mapC.style.cursor=hitMap(e)?'pointer':'default';});
+$('vm-close').addEventListener('click',close);
+addEventListener('keydown',e=>{if(e.key==='Escape'&&$('viaModal').classList.contains('show'))close();});
+
+// tabs
+const panes={neural:$('pane-neural'),via:$('pane-via')};
+document.querySelectorAll('.rpanel-tab').forEach(tab=>{
+  tab.addEventListener('click',()=>{
+    const p=tab.dataset.pane;
+    document.querySelectorAll('.rpanel-tab').forEach(t=>t.classList.toggle('active',t===tab));
+    panes.neural.style.display=p==='neural'?'flex':'none';
+    panes.via.classList.toggle('show',p==='via');
+    if(p==='via')requestAnimationFrame(drawMap);
+    else{if(window._isolateRegion&&!filter&&!sel)window._isolateRegion(-1);}});});
+
+renderCards();
+new ResizeObserver(()=>{if(panes.via.classList.contains('show'))drawMap();}).observe(mapC);
 })();
 </script>
