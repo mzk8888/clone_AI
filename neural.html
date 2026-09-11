@@ -22,7 +22,7 @@
     --font-u:"Segoe UI","Hiragino Sans","Noto Sans JP","Yu Gothic UI",system-ui,sans-serif;
     --font-m:"Cascadia Mono","Consolas",ui-monospace,"SF Mono",monospace;
   }
-  body{margin:0;background:var(--ground);color:var(--fg);font-family:var(--font-u);-webkit-font-smoothing:antialiased}
+  body{margin:0;background:var(--ground);color:var(--fg);font-family:var(--font-u);-webkit-font-smoothing:antialiased;overflow:hidden}
 
   .stage{position:relative;width:100%;height:100dvh;min-height:520px;overflow:hidden;
     background:radial-gradient(120% 90% at 50% 46%,var(--ground-2) 0%,var(--ground) 68%)}
@@ -140,64 +140,32 @@
   .hint span{display:block;margin-top:4px;font-family:var(--font-u);font-size:10.5px;letter-spacing:.05em;text-transform:none}
   .hint.gone{opacity:0}
 
-  /* ── 下層セクション共通（設計図2・3）── */
-  .sheet{border-top:1px solid var(--line);padding:clamp(38px,5vw,66px) clamp(16px,4vw,54px) clamp(30px,4vw,54px);
-    background:linear-gradient(180deg,rgba(8,14,24,.5),transparent 40%)}
-  .sheet-head{max-width:1680px;margin:0 auto clamp(22px,3vw,34px)}
-  .sheet-eyebrow{font-family:var(--font-d);font-size:8.5px;letter-spacing:.30em;text-transform:uppercase;
-    color:var(--r2);margin:0 0 12px;display:flex;align-items:center;gap:12px}
-  .sheet-eyebrow::after{content:"";flex:1;height:1px;background:var(--line);max-width:120px}
-  .sheet-title{font-size:clamp(24px,3.2vw,36px);font-weight:300;letter-spacing:.01em;margin:0 0 10px;line-height:1.2}
-  .sheet-lede{font-size:11.5px;line-height:1.95;color:var(--fg-dim);margin:0;max-width:62ch}
-  .sheet-lede em{font-style:normal;color:var(--r2)}
-  .sheet-body{max-width:1680px;margin:0 auto}
+  /* ── ビュー切替＋徳性フィルター（キャンバス上） ── */
+  .viabar{position:absolute;left:50%;bottom:52px;transform:translateX(-50%);z-index:25;
+    display:flex;flex-direction:column;align-items:center;gap:7px;pointer-events:none}
+  .viabar > *{pointer-events:auto}
+  .mode-sw{display:flex;border:1px solid var(--line-s);background:rgba(6,12,26,.72);backdrop-filter:blur(12px)}
+  .mode-sw button{background:none;border:0;padding:6px 15px;cursor:pointer;transition:.18s;
+    font-family:var(--font-d);font-size:9px;letter-spacing:.20em;text-transform:uppercase;
+    color:var(--fg-faint);border-right:1px solid var(--line)}
+  .mode-sw button:last-child{border-right:0}
+  .mode-sw button .ja{font-family:var(--font-u);letter-spacing:.08em;text-transform:none;
+    font-size:10px;margin-right:6px}
+  .mode-sw button:hover:not(.on){color:var(--fg-dim)}
+  .mode-sw button.on{color:#fff;background:rgba(155,139,255,.22);box-shadow:inset 0 -2px 0 #9B8BFF}
 
-  /* フィルター */
-  .via-filters{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:18px}
-  .via-pill{padding:4px 12px;background:none;border:1px solid var(--line);color:var(--fg-faint);
-    font-family:var(--font-d);font-size:9px;letter-spacing:.14em;cursor:pointer;transition:.15s}
-  .via-pill.active{color:#fff;border-color:var(--vc,#9B8BFF);background:rgba(var(--vcr,155,139,255),.22)}
+  .via-filters{display:flex;flex-wrap:wrap;justify-content:center;gap:4px;max-width:min(560px,80vw);
+    opacity:0;transform:translateY(-4px);transition:opacity .3s,transform .3s;pointer-events:none}
+  .via-filters.show{opacity:1;transform:none;pointer-events:auto}
+  .via-pill{padding:3px 10px;background:rgba(6,12,26,.7);border:1px solid var(--line);color:var(--fg-faint);
+    font-family:var(--font-d);font-size:8px;letter-spacing:.14em;cursor:pointer;transition:.15s;
+    backdrop-filter:blur(9px)}
+  .via-pill.active{color:#fff;border-color:var(--vc,#9B8BFF);background:rgba(var(--vcr,155,139,255),.3)}
   .via-pill:hover:not(.active){color:var(--fg-dim);border-color:var(--line-s)}
 
-  /* 24のキャラクターカード */
-  .via-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(104px,1fr));gap:6px}
-  .via-card{position:relative;padding:13px 8px 10px;background:var(--panel);border:1px solid var(--line);
-    border-top:2px solid var(--vc,var(--line));cursor:pointer;transition:.16s;text-align:center;
-    display:flex;flex-direction:column;align-items:center;gap:2px;min-width:0}
-  .via-card:hover,.via-card.selected{background:rgba(var(--vcr,155,139,255),.16);
-    border-color:var(--vc);transform:translateY(-2px)}
-  .via-card .vvk{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-size:30px;line-height:1.05;
-    color:var(--vc);font-weight:400}
-  .via-card .vvj{font-size:11px;line-height:1.4;color:var(--fg);margin-top:3px;word-break:keep-all}
-  .via-card .vve{font-family:var(--font-d);font-size:7px;letter-spacing:.10em;color:var(--fg-faint);
-    text-transform:uppercase;line-height:1.35;overflow-wrap:anywhere}
-  .via-card .vvt{display:flex;flex-wrap:wrap;gap:3px;justify-content:center;margin-top:auto;padding-top:7px}
-  .via-card .vvt span{font-family:var(--font-d);font-size:6px;letter-spacing:.06em;padding:1.5px 4px;
-    border:1px solid rgba(var(--vcr,155,139,255),.4);color:var(--vc);max-width:100%;overflow:hidden}
-  .via-card .vvt span.reg{border-color:var(--line);color:var(--fg-faint)}
-
-  /* 2因子マップ */
-  .factor-wrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:clamp(20px,3vw,44px);
-    align-items:start}
-  .factor-note{display:flex;flex-direction:column;gap:14px}
-  .factor-axes{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-  .factor-axes div{border:1px solid var(--line);padding:9px 11px;background:var(--panel)}
-  .factor-axes .al{font-family:var(--font-d);font-size:7.5px;letter-spacing:.18em;text-transform:uppercase;
-    color:var(--fg-faint);margin-bottom:3px}
-  .factor-axes .av{font-size:11px;color:var(--fg-dim);line-height:1.6}
-  .factor-map-wrap{padding:12px;background:var(--panel);border:1px solid var(--line);backdrop-filter:blur(9px);
-    max-width:560px;margin-left:auto}
-  #viaMap{display:block;width:100%;height:auto;cursor:default}
-  .factor-legend{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:12px;padding-top:11px;
-    border-top:1px solid var(--line)}
-  .factor-legend span{display:inline-flex;align-items:center;gap:6px;font-size:10px;color:var(--fg-dim)}
-  .factor-legend i{width:7px;height:7px;border-radius:50%;flex:none}
-  .factor-legend b{font-family:var(--font-d);font-size:8px;letter-spacing:.10em;color:var(--fg-faint);font-weight:400}
-
-  @media (max-width:820px){
-    .factor-wrap{grid-template-columns:1fr}
-    .via-cards{grid-template-columns:repeat(auto-fit,minmax(92px,1fr))}
-  }
+  .via-caption{font-size:9.5px;color:var(--fg-faint);letter-spacing:.04em;text-align:center;
+    max-width:min(520px,80vw);opacity:0;transition:opacity .3s;line-height:1.6}
+  .via-caption.show{opacity:1}
   /* VIA detail modal */
   .via-modal{position:fixed;z-index:300;left:50%;top:50%;transform:translate(-50%,-50%);
     width:min(320px,88vw);max-height:68vh;overflow-y:auto;
@@ -225,6 +193,16 @@
 <div class="stage" id="stage">
   <canvas id="brain" tabindex="0"></canvas>
   <div class="ticks" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+
+  <div class="viabar">
+    <div class="mode-sw" id="modeSw" role="tablist">
+      <button data-mode="neural" class="on"><span class="ja">神経</span>Neural</button>
+      <button data-mode="strength"><span class="ja">強み</span>Strengths</button>
+      <button data-mode="factor"><span class="ja">2因子</span>2-Factor</button>
+    </div>
+    <div class="via-filters" id="viaFilters"></div>
+    <p class="via-caption" id="viaCaption"></p>
+  </div>
 
   <div class="hud">
     <header class="masthead">
@@ -312,47 +290,6 @@
   </div>
 
 </div><!-- /stage -->
-
-<!-- ══ 設計図2 ══ 24のすとれんぐキャラクター ══════════════════ -->
-<section class="sheet" id="sheet-strengths">
-  <div class="sheet-head">
-    <p class="sheet-eyebrow">VIA · Character Strengths</p>
-    <h2 class="sheet-title">24のすとれんぐキャラクター</h2>
-    <p class="sheet-lede">VIA研究所が定義する24の性格の強みを、それぞれ固有のキャラクターとして配置。6つの<em>徳性</em>に分類され、各強みは対応する<em>脳領域</em>に紐づく。カードをクリックすると詳細が開き、その領域が脳内で分離表示される。</p>
-  </div>
-  <div class="sheet-body">
-    <div class="via-filters" id="viaFilters"></div>
-    <div class="via-cards" id="viaCards"></div>
-  </div>
-</section>
-
-<!-- ══ 設計図3 ══ VIA 2因子バランスマップ ════════════════════ -->
-<section class="sheet" id="sheet-factor">
-  <div class="sheet-head">
-    <p class="sheet-eyebrow">2-Factor Map</p>
-    <h2 class="sheet-title">VIA 2因子バランスマップ</h2>
-    <p class="sheet-lede">24の強みを「<em>個人内 ⇄ 個人間</em>」「<em>感情（心） ⇄ 理性（頭）</em>」の2軸でマッピング。書籍の2因子バランスグラフを再現し、強みの活用シナリオを視覚的に把握できる。</p>
-  </div>
-  <div class="sheet-body">
-    <div class="factor-wrap">
-      <div class="factor-note">
-        <div class="factor-axes">
-          <div><div class="al">Intrapersonal 縦軸 ↑</div><div class="av">個人内 — 自分自身へ向かう強み。内省し、律し、意味を見出す。</div></div>
-          <div><div class="al">Interpersonal 縦軸 ↓</div><div class="av">個人間 — 他者へ向かう強み。関わり、支え、まとめる。</div></div>
-          <div><div class="al">Emotional 横軸 ←</div><div class="av">感情（心） — 心が動くことを起点に働く強み。</div></div>
-          <div><div class="al">Rational 横軸 →</div><div class="av">理性（頭） — 筋道を立てることを起点に働く強み。</div></div>
-        </div>
-        <div class="factor-legend" id="viaLegend" style="border-top:0;padding-top:0;margin-top:2px"></div>
-      </div>
-      <div>
-        <div class="factor-map-wrap">
-          <canvas id="viaMap"></canvas>
-        </div>
-        <p class="sheet-lede" id="viaMapHint" style="font-size:10px;margin:9px 0 0;color:var(--fg-faint);text-align:right;max-width:560px;margin-left:auto">24の強み</p>
-      </div>
-    </div>
-  </div>
-</section>
 
   <div class="via-modal" id="viaModal" role="dialog" aria-modal="true" aria-labelledby="vm-title">
     <div class="via-modal-head">
@@ -509,7 +446,10 @@ function refreshPal(){
 refreshPal();
 
 // ── VIEW STATE ──
-const view={yaw:-.62,pitch:.16,zoom:1,auto:true,edges:true,activity:.62,isolate:-1,assembly:redMo?1:0};
+const view={yaw:-.62,pitch:.16,zoom:1,auto:true,edges:true,activity:.62,isolate:-1,assembly:redMo?1:0,
+  mode:'neural',glyph:0,flat:0};
+// glyph: 24の強みの現れ具合 0..1 / flat: 脳の配置(0) ⇄ 2因子平面(1)
+const MODES={neural:{glyph:0,flat:0},strength:{glyph:1,flat:0},factor:{glyph:1,flat:1}};
 let tween=null,W=0,H=0,DPR=1;
 function resize(){
   DPR=Math.min(window.devicePixelRatio||1,2);W=stage.clientWidth;H=stage.clientHeight;
@@ -546,6 +486,10 @@ function frame(now){
   const cy=Math.cos(view.yaw),sy=Math.sin(view.yaw),cp=Math.cos(view.pitch),sp=Math.sin(view.pitch);
   const S=Math.min(W,H)*.72*view.zoom,ox=W/2,oy=H/2+Math.min(W,H)*.02;
   const asm=easeOut(view.assembly),morphing=view.assembly<1;
+  const tg=MODES[view.mode];
+  view.glyph+=(tg.glyph-view.glyph)*Math.min(1,dt*4.2);
+  view.flat +=(tg.flat -view.flat )*Math.min(1,dt*3.0);
+  const gl=view.glyph;
   const aBase=.20,aGain=.80,aWave=.34;
 
   for(let i=0;i<BINS;i++)bins[i].length=0;
@@ -561,6 +505,7 @@ function frame(now){
     if(!redMo)a*=1-aWave+aWave*Math.sin(time*1.5+pphase[i])*(0.35+view.activity);
     if(view.isolate>=0&&preg[i]!==view.isolate)a*=.09;
     if(morphing)a*=.25+.75*asm;
+    a*=1-.55*gl-.40*gl*view.flat;   // 強みでは脳を残し、2因子では脳を退かせる
     saA[i]=a;
     let bin=(depth*(BINS-1))|0;bin=Math.max(0,Math.min(BINS-1,bin));bins[bin].push(i);}
 
@@ -578,7 +523,7 @@ function frame(now){
         const d=(skA[a]+skA[b])*.5,t=(d-K_MIN)/(K_MAX-K_MIN),gi=Math.min(G-1,Math.max(0,(t*G)|0));
         if(gi!==g)continue;if(view.isolate>=0&&preg[a]!==view.isolate&&preg[b]!==view.isolate)continue;
         ctx.moveTo(sxA[a],syA[a]);ctx.lineTo(sxA[b],syA[b]);any=true;}
-      if(any){const base=.30;ctx.strokeStyle=`rgba(${lc},${(base*(.22+(g/(G-1))*.9)*(morphing?asm:1)).toFixed(3)})`;ctx.stroke();}}}
+      if(any){const base=.30;ctx.strokeStyle=`rgba(${lc},${(base*(.22+(g/(G-1))*.9)*(morphing?asm:1)*(1-.70*gl-.29*gl*view.flat)).toFixed(3)})`;ctx.stroke();}}}
 
   // points
   const sizeBase=3.05*(S/620),spread=3.1;
@@ -611,8 +556,8 @@ function frame(now){
 
   // concept labels overlay
   ctx.globalCompositeOperation='source-over';
-  if(view.isolate>=0){drawAnnotation(view.isolate);}
-  else if(!morphing){
+  if(view.isolate>=0&&gl<.5){drawAnnotation(view.isolate);}
+  else if(!morphing&&gl<.99){
     // draw top concept names at each region centroid
     const rcx=new Float32Array(6),rcy=new Float32Array(6),rcn=new Float32Array(6);
     for(let i=0;i<COUNT;i+=3){rcx[preg[i]]+=sxA[i];rcy[preg[i]]+=syA[i];rcn[preg[i]]++;}
@@ -623,11 +568,13 @@ function frame(now){
       concepts.slice(0,2).forEach((name,k)=>{
         ctx.font=`${k===0?'bold 9.5':'8'}px "Segoe UI","Hiragino Sans",system-ui,sans-serif`;
         ctx.fillStyle=k===0?col:'rgba('+regionRGB[ri][0]+','+regionRGB[ri][1]+','+regionRGB[ri][2]+',.65)';
-        ctx.globalAlpha=.75-k*.25;
+        ctx.globalAlpha=(.75-k*.25)*(1-gl);
         ctx.textAlign='center';
         ctx.shadowColor='#000';ctx.shadowBlur=5;
         ctx.fillText(name,cx2,cy2-12+k*14);ctx.shadowBlur=0;});
       ctx.globalAlpha=1;});}
+
+  drawVia(cy,sy,cp,sp,S,ox,oy);
 
   if(now-lastTrace>42){
     lastTrace=now;
@@ -636,6 +583,101 @@ function frame(now){
     traceHead=(traceHead+1)%trace.length;drawTrace();
     document.getElementById('s-spikes').textContent=spikeCount.toLocaleString('en-US');}
   requestAnimationFrame(frame);}
+
+// ── 24の強みを脳へ埋め込む ────────────────────────────────────
+// 徳性 → 脳領域の対応は VIA 側に既にある。ここでは領域の重心を出して
+// そのまわりへ紋を配り、2因子平面との間をモーフさせる。
+let viaNodes=null;
+const FR=.66,FOY=.08;     // 2因子平面の大きさと、操作バーを避ける上寄せ
+function buildVia(){
+  if(viaNodes||!window.VIA)return;
+  const {S:ST,VIRTUE:VT}=window.VIA;
+  const cx=new Float64Array(6),cyy=new Float64Array(6),cz=new Float64Array(6),cn=new Float64Array(6);
+  for(let i=0;i<COUNT;i++){const r=preg[i];cx[r]+=px[i];cyy[r]+=py[i];cz[r]+=pz[i];cn[r]++;}
+  const cen=[];
+  for(let r=0;r<6;r++)cen.push(cn[r]?[cx[r]/cn[r],cyy[r]/cn[r],cz[r]/cn[r]]:[0,0,0]);
+  const byReg={};
+  for(const st of ST){const r=VT[st.v].reg;(byReg[r]=byReg[r]||[]).push(st);}
+  viaNodes=[];
+  for(const r in byReg){
+    const grp=byReg[r],c=cen[r],n=grp.length;
+    grp.forEach((st,j)=>{
+      const ang=(j/n)*Math.PI*2+Number(r)*1.07;
+      const rad=.135+(j%2)*.042;
+      let bx=c[0]+Math.cos(ang)*rad,by=c[1]+Math.sin(ang)*rad*.78,bz=c[2]+Math.sin(ang*1.7)*.09;
+      const L=Math.hypot(bx,by,bz)||1,k=1+.05/L;     // 点群のすぐ手前へ浮かせる
+      viaNodes.push({s:st,v:VT[st.v],
+        bp:[bx*k,by*k,bz*k],
+        fp:[st.y*FR,-st.x*FR+FOY,0],                 // 横=感情⇄理性, 縦=個人間⇄個人内
+        sx:0,sy:0,k:1});});}
+}
+
+function drawVia(cy,sy,cp,sp,S,ox,oy){
+  buildVia();
+  const gl=view.glyph;
+  if(!viaNodes||gl<.004)return;
+  const st=window.VIA?window.VIA.state():{filter:null,sel:null};
+  const f=view.flat;
+  const prj=(X,Y,Z)=>{const x1=X*cy-Z*sy,z1=X*sy+Z*cy,y2=Y*cp-z1*sp,z2=Y*sp+z1*cp,
+    k=FOCAL/(CAM_D-z2);return[ox+x1*k*S,oy-y2*k*S,k];};
+
+  // 2因子の枠（平面へ寄るほど濃く）
+  if(f>.02){
+    const a=gl*f,R=.78,OY=FOY;
+    ctx.globalCompositeOperation='source-over';
+    ctx.lineWidth=1;ctx.strokeStyle=`rgba(150,182,214,${(.17*a).toFixed(3)})`;
+    const c=[prj(-R,-R+OY,0),prj(R,-R+OY,0),prj(R,R+OY,0),prj(-R,R+OY,0)];
+    ctx.beginPath();ctx.moveTo(c[0][0],c[0][1]);
+    for(let i=1;i<4;i++)ctx.lineTo(c[i][0],c[i][1]);
+    ctx.closePath();ctx.stroke();
+    ctx.strokeStyle=`rgba(150,182,214,${(.26*a).toFixed(3)})`;
+    const l=prj(-R,OY,0),r2=prj(R,OY,0),b2=prj(0,-R+OY,0),t2=prj(0,R+OY,0);
+    ctx.beginPath();ctx.moveTo(l[0],l[1]);ctx.lineTo(r2[0],r2[1]);
+    ctx.moveTo(b2[0],b2[1]);ctx.lineTo(t2[0],t2[1]);ctx.stroke();
+
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.font='7px Bahnschrift,"DIN Alternate",system-ui';ctx.letterSpacing='.13em';
+    ctx.fillStyle=`rgba(120,150,185,${(.34*a).toFixed(3)})`;
+    const q=[[-.40,.66,'INTRAPERSONAL × EMOTIONAL'],[.40,.66,'INTRAPERSONAL × RATIONAL'],
+             [-.40,-.66,'INTERPERSONAL × EMOTIONAL'],[.40,-.66,'INTERPERSONAL × RATIONAL']];
+    for(const[qx,qy,lab]of q){const pt=prj(qx,qy+OY,0);ctx.fillText(lab,pt[0],pt[1]);}
+    ctx.font='9.5px "Segoe UI","Hiragino Sans",system-ui';
+    ctx.fillStyle=`rgba(150,182,214,${(.7*a).toFixed(3)})`;
+    const tp=prj(0,R+OY,0),bp2=prj(0,-R+OY,0),lp=prj(-R,OY,0),rp=prj(R,OY,0);
+    ctx.fillText('個人内 Intrapersonal',tp[0],tp[1]-16);
+    ctx.fillText('個人間 Interpersonal',bp2[0],bp2[1]+16);
+    ctx.textAlign='right';ctx.fillText('感情（心）',lp[0]-12,lp[1]);
+    ctx.textAlign='left'; ctx.fillText('理性（頭）',rp[0]+12,rp[1]);
+    ctx.letterSpacing='0px';
+  }
+
+  // 紋
+  ctx.globalCompositeOperation='lighter';
+  for(const nd of viaNodes){
+    const X=nd.bp[0]+(nd.fp[0]-nd.bp[0])*f,
+          Y=nd.bp[1]+(nd.fp[1]-nd.bp[1])*f,
+          Z=nd.bp[2]+(nd.fp[2]-nd.bp[2])*f;
+    const q=prj(X,Y,Z);nd.sx=q[0];nd.sy=q[1];nd.k=q[2];}
+  const order=viaNodes.slice().sort((a,b)=>a.k-b.k);
+  ctx.textAlign='center';ctx.textBaseline='middle';
+  for(const nd of order){
+    const dim=st.filter&&nd.s.v!==st.filter,on=st.sel===nd.s;
+    const al=gl*(dim?.12:(on?1:.9));
+    if(al<.02)continue;
+    const sz=Math.max(10,16*nd.k*(S/620))*(on?1.4:1);
+    const g=ctx.createRadialGradient(nd.sx,nd.sy,0,nd.sx,nd.sy,sz*1.6);
+    g.addColorStop(0,`rgba(${nd.v.rgb},${(al*.42).toFixed(3)})`);
+    g.addColorStop(1,`rgba(${nd.v.rgb},0)`);
+    ctx.fillStyle=g;ctx.beginPath();ctx.arc(nd.sx,nd.sy,sz*1.6,0,Math.PI*2);ctx.fill();
+    ctx.font=`${sz}px "Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif`;
+    ctx.fillStyle=on?`rgba(255,255,255,${al.toFixed(3)})`:`rgba(${nd.v.rgb},${al.toFixed(3)})`;
+    ctx.fillText(nd.s.k,nd.sx,nd.sy);
+    if(on||(f>.6&&!dim)){
+      ctx.font=`${Math.max(7.5,sz*.42)}px "Segoe UI","Hiragino Sans",system-ui`;
+      ctx.fillStyle=`rgba(${nd.v.rgb},${(al*.78).toFixed(3)})`;
+      ctx.fillText(nd.s.jp,nd.sx,nd.sy+sz*.92);}}
+  ctx.globalCompositeOperation='source-over';ctx.globalAlpha=1;
+}
 
 function drawAnnotation(reg){
   let cx2=0,cy2=0,cnt=0;
@@ -693,6 +735,42 @@ document.querySelectorAll('[data-view]').forEach(btn=>{
 const regBtns=[...document.querySelectorAll('.reg')];
 regBtns.forEach(btn=>{btn.addEventListener('click',()=>{const r=Number(btn.dataset.region);view.isolate=view.isolate===r?-1:r;regBtns.forEach(b=>b.setAttribute('aria-pressed',String(Number(b.dataset.region)===view.isolate)));});});
 window._isolateRegion=r=>{view.isolate=r;regBtns.forEach(b=>b.setAttribute('aria-pressed',String(Number(b.dataset.region)===r)));};
+
+// ── ビュー切替 神経 / 強み / 2因子 ──────────────────────────
+const CAPS={strength:'24の強みが、対応する脳領域に灯っています。紋をクリックすると詳細が開きます。',
+            factor:'同じ24の強みを「個人内 ⇄ 個人間」「感情（心） ⇄ 理性（頭）」の平面へ並べ直しています。',
+            neural:''};
+const modeSw=document.getElementById('modeSw');
+const viaFil=document.getElementById('viaFilters');
+const viaCap=document.getElementById('viaCaption');
+function setMode(m){
+  if(!MODES[m])return;
+  view.mode=m;
+  [...modeSw.children].forEach(b=>b.classList.toggle('on',b.dataset.mode===m));
+  viaFil.classList.toggle('show',m!=='neural');
+  viaCap.classList.toggle('show',m!=='neural');
+  viaCap.textContent=CAPS[m];
+  hint.classList.add('gone');
+  if(m==='factor'){
+    // 2軸を歪ませずに読ませたいのでカメラを正面へ固定する
+    const turns=Math.round(view.yaw/(Math.PI*2));
+    tween={t:0,y0:view.yaw,y1:turns*Math.PI*2,p0:view.pitch,p1:0};
+    if(view.auto){view.auto=false;autoBtn.setAttribute('aria-pressed','false');autoBtn.lastChild.textContent='停止';}}
+  if(m==='neural'&&window.VIA)window.VIA.clear();}
+modeSw.addEventListener('click',e=>{const b=e.target.closest('button');if(b)setMode(b.dataset.mode);});
+window._setViaMode=setMode;
+window._getViaMode=()=>view.mode;
+
+cv.addEventListener('click',e=>{
+  if(moved||view.glyph<.5||!viaNodes||!window.VIA)return;
+  const r=cv.getBoundingClientRect(),mx=e.clientX-r.left,my=e.clientY-r.top;
+  const st=window.VIA.state();
+  let best=null,bd=Infinity;
+  for(const nd of viaNodes){
+    if(st.filter&&nd.s.v!==st.filter)continue;
+    const d=(nd.sx-mx)**2+(nd.sy-my)**2;
+    if(d<bd){bd=d;best=nd;}}
+  if(best&&bd<28*28)window.VIA.open(best.s);});
 
 document.getElementById('s-nodes').textContent=COUNT.toLocaleString('en-US');
 document.getElementById('s-edges').textContent=EDGES.toLocaleString('en-US');
@@ -994,103 +1072,7 @@ const S=[
 ];
 
 const $=id=>document.getElementById(id);
-const mapC=$('viaMap'),mapX=mapC.getContext('2d');
 let filter=null,sel=null;
-const PAD=34;
-let mw=0,mh=0,side=0,ox=0,oy=0;
-
-// 設計図3の軸：横 = 感情(-1)⇄理性(+1)、縦 = 個人間(-1)⇄個人内(+1)
-// データは 内向⇄対人(x) / 感情⇄理性(y) 持ちなので、ここで向きを合わせる
-const fx=s=>s.y;
-const fy=s=>-s.x;
-const mpx=v=>ox+(v+1)/2*side;
-const mpy=v=>oy+(1-v)/2*side;
-
-function sizeMap(){
-  const r=mapC.getBoundingClientRect();if(!r.width)return false;
-  const d=Math.min(window.devicePixelRatio||1,2);
-  mw=r.width;mh=Math.min(r.width,560);
-  mapC.style.height=mh+'px';
-  mapC.width=Math.round(mw*d);mapC.height=Math.round(mh*d);
-  mapX.setTransform(d,0,0,d,0,0);
-  side=Math.min(mw,mh)-PAD*2;            // 2軸を同じ尺度で読ませる
-  ox=(mw-side)/2;oy=(mh-side)/2;
-  return true;}
-
-function drawMap(){
-  if(!sizeMap())return;
-  mapX.clearRect(0,0,mw,mh);
-
-  // 四象限
-  mapX.strokeStyle='rgba(150,182,214,.07)';mapX.lineWidth=.5;
-  mapX.strokeRect(ox,oy,side,side);
-  mapX.strokeStyle='rgba(150,182,214,.15)';
-  mapX.beginPath();
-  mapX.moveTo(ox-8,mpy(0));mapX.lineTo(ox+side+8,mpy(0));
-  mapX.moveTo(mpx(0),oy-8);mapX.lineTo(mpx(0),oy+side+8);
-  mapX.stroke();
-
-  mapX.font='7px Bahnschrift,"DIN Alternate",system-ui';
-  mapX.letterSpacing='.12em';
-  mapX.fillStyle='rgba(120,150,185,.26)';
-  mapX.textAlign='center';mapX.textBaseline='middle';
-  mapX.fillText('INTRAPERSONAL × EMOTIONAL',ox+side*.25,oy+side*.12);
-  mapX.fillText('INTRAPERSONAL × RATIONAL', ox+side*.75,oy+side*.12);
-  mapX.fillText('INTERPERSONAL × EMOTIONAL',ox+side*.25,oy+side*.88);
-  mapX.fillText('INTERPERSONAL × RATIONAL', ox+side*.75,oy+side*.88);
-
-  // 軸の銘
-  mapX.fillStyle='rgba(140,170,205,.6)';
-  mapX.font='8.5px "Segoe UI","Hiragino Sans",system-ui';
-  mapX.fillText('個人内 Intrapersonal',mpx(0),oy-17);
-  mapX.fillText('個人間 Interpersonal',mpx(0),oy+side+17);
-  mapX.save();
-  mapX.translate(ox-17,mpy(0));mapX.rotate(-Math.PI/2);
-  mapX.fillText('感情（心） Emotional',0,0);
-  mapX.restore();
-  mapX.save();
-  mapX.translate(ox+side+17,mpy(0));mapX.rotate(Math.PI/2);
-  mapX.fillText('理性（頭） Rational',0,0);
-  mapX.restore();
-  mapX.letterSpacing='0px';
-
-  for(const s of S){
-    const V=VIRTUE[s.v],dim=filter&&s.v!==filter,on=sel===s;
-    const X=mpx(fx(s)),Y=mpy(fy(s));
-    if(on){mapX.globalAlpha=.55;mapX.strokeStyle=V.hex;mapX.lineWidth=1;
-      mapX.beginPath();mapX.arc(X,Y,11,0,Math.PI*2);mapX.stroke();}
-    mapX.globalAlpha=dim?.12:(on?1:.85);
-    mapX.fillStyle=V.hex;
-    mapX.beginPath();mapX.arc(X,Y,on?6:4.4,0,Math.PI*2);mapX.fill();
-    if(!dim){mapX.globalAlpha=on?1:.72;mapX.fillStyle=on?'#fff':V.hex;
-      mapX.font=`${on?11:9.5}px "Hiragino Mincho ProN","Yu Mincho",serif`;
-      mapX.textAlign='center';mapX.textBaseline='middle';
-      mapX.fillText(s.k,X,Y-11);}}
-  mapX.globalAlpha=1;}
-
-function hitMap(e){
-  const r=mapC.getBoundingClientRect();
-  const x=e.clientX-r.left,y=e.clientY-r.top;
-  let best=null,bd=Infinity;
-  for(const s of S){if(filter&&s.v!==filter)continue;
-    const dx=x-mpx(fx(s)),dy=y-mpy(fy(s)),d=dx*dx+dy*dy;
-    if(d<bd){bd=d;best=s;}}
-  return bd<400?best:null;}
-
-function renderCards(){
-  const box=$('viaCards');box.innerHTML='';
-  const list=S.filter(s=>!filter||s.v===filter);
-  for(const s of list){
-    const V=VIRTUE[s.v];
-    const b=document.createElement('button');
-    b.className='via-card'+(sel===s?' selected':'');
-    b.style.setProperty('--vc',V.hex);b.style.setProperty('--vcr',V.rgb);
-    b.innerHTML=`<div class="vvk">${s.k}</div><div class="vvj">${s.jp}</div>`
-      +`<div class="vve">${s.en}</div>`
-      +`<div class="vvt"><span>${V.jp}</span><span class="reg">${V.regJp.split(' / ')[0]||V.regJp}</span></div>`;
-    b.addEventListener('click',()=>open(s));
-    box.appendChild(b);}
-  $('viaMapHint').textContent=`${list.length}の強み`;}
 
 function open(s){
   sel=s;const V=VIRTUE[s.v];
@@ -1110,12 +1092,11 @@ function open(s){
   $('vm-brain').textContent=`▸ 対応脳領域 ${V.regJp}`;
   $('viaModal').classList.add('show');
   if(window._isolateRegion)window._isolateRegion(V.reg);
-  renderCards();drawMap();}
+  if(window._setViaMode&&view0()==='neural')window._setViaMode('strength');}
 
 function close(){
   $('viaModal').classList.remove('show');sel=null;
-  if(window._isolateRegion)window._isolateRegion(filter?VIRTUE[filter].reg:-1);
-  renderCards();drawMap();}
+  if(window._isolateRegion)window._isolateRegion(filter?VIRTUE[filter].reg:-1);}
 
 // filter pills
 const pills=$('viaFilters');
@@ -1128,26 +1109,24 @@ const mkPill=(label,key,hex,rgb)=>{
     filter=(key!==null&&filter===key)?null:key;
     [...pills.children].forEach(p=>p.classList.toggle('active',(p.dataset.key||null)===filter));
     if(sel&&filter&&sel.v!==filter)sel=null;
-    if(window._isolateRegion)window._isolateRegion(filter?VIRTUE[filter].reg:-1);
-    renderCards();drawMap();});
+    if(window._isolateRegion)window._isolateRegion(filter?VIRTUE[filter].reg:-1);});
   pills.appendChild(b);};
 mkPill('ALL',null,'#9B8BFF','155,139,255');
 for(const [k,V] of Object.entries(VIRTUE))mkPill(V.jp,k,V.hex,V.rgb);
 
-mapC.addEventListener('click',e=>{const s=hitMap(e);if(s)open(s);});
-mapC.addEventListener('mousemove',e=>{mapC.style.cursor=hitMap(e)?'pointer':'default';});
 $('vm-close').addEventListener('click',close);
 addEventListener('keydown',e=>{if(e.key==='Escape'&&$('viaModal').classList.contains('show'))close();});
 
-// 徳性の凡例
-const legend=$('viaLegend');
-for(const [k,V] of Object.entries(VIRTUE)){
-  const el=document.createElement('span');
-  el.innerHTML=`<i style="background:${V.hex}"></i>${V.jp}<b>${V.en}</b>`;
-  legend.appendChild(el);}
+// 脳エンジンへ渡す窓口
+function view0(){return window._getViaMode?window._getViaMode():'neural';}
+window.VIA={
+  S,VIRTUE,
+  state:()=>({filter,sel}),
+  open,
+  clear(){sel=null;filter=null;
+    [...pills.children].forEach(p=>p.classList.toggle('active',!p.dataset.key));
+    $('viaModal').classList.remove('show');},
+};
 
-renderCards();
-requestAnimationFrame(drawMap);
-new ResizeObserver(()=>drawMap()).observe(mapC);
 })();
 </script>
