@@ -1,0 +1,1057 @@
+<title>Mizukiの脳 — NEURAL CONSTRUCT</title>
+<style>
+  :root {
+    --ground: #05080e;
+    --ground-2: #0c1421;
+    --panel: rgba(8,14,24,0.62);
+    --line: rgba(150,182,214,0.18);
+    --line-s: rgba(150,182,214,0.34);
+    --fg: #d4dfec;
+    --fg-dim: #7d8fa6;
+    --fg-faint: #4b5b6e;
+    --r0: #4ed8e6;
+    --r1: #5fe3a6;
+    --r2: #b491ff;
+    --r3: #5c8dff;
+    --r4: #ffb25c;
+    --r5: #ff7e74;
+    --spark: #fff3d0;
+    --font-d:"Bahnschrift","DIN Alternate","Oswald","Helvetica Neue",system-ui,sans-serif;
+    --font-u:"Segoe UI","Hiragino Sans","Noto Sans JP","Yu Gothic UI",system-ui,sans-serif;
+    --font-m:"Cascadia Mono","Consolas",ui-monospace,"SF Mono",monospace;
+  }
+  body{margin:0;background:var(--ground);color:var(--fg);font-family:var(--font-u);-webkit-font-smoothing:antialiased;overflow:hidden}
+
+  .stage{position:relative;width:100%;height:100dvh;min-height:520px;overflow:hidden;
+    background:radial-gradient(120% 90% at 50% 46%,var(--ground-2) 0%,var(--ground) 68%)}
+
+  #brain{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:grab}
+  #brain.dragging{cursor:grabbing}
+
+  /* corner ticks */
+  .ticks{position:absolute;inset:0;pointer-events:none}
+  .ticks i{position:absolute;width:18px;height:18px;border:0 solid var(--line);opacity:.8}
+  .ticks i:nth-child(1){top:14px;left:14px;border-top-width:1px;border-left-width:1px}
+  .ticks i:nth-child(2){top:14px;right:14px;border-top-width:1px;border-right-width:1px}
+  .ticks i:nth-child(3){bottom:14px;left:14px;border-bottom-width:1px;border-left-width:1px}
+  .ticks i:nth-child(4){bottom:14px;right:14px;border-bottom-width:1px;border-right-width:1px}
+
+  /* HUD overlay — 3 columns: left panel | brain center (empty) | right panel */
+  .hud{position:absolute;inset:0;padding:clamp(14px,2.2vw,30px);display:grid;
+    grid-template-columns:200px 1fr 220px;grid-template-rows:auto 1fr auto;
+    gap:clamp(10px,1.4vw,18px);pointer-events:none}
+  .hud>*{pointer-events:auto}
+
+  /* masthead */
+  .masthead{grid-column:1;grid-row:1;max-width:28ch}
+  .eyebrow{margin:0 0 8px;font-size:10.5px;letter-spacing:.24em;color:var(--fg-dim)}
+  .eyebrow::before{content:"";display:inline-block;width:20px;height:1px;background:var(--line-s);vertical-align:middle;margin-right:9px}
+  h1{margin:0;display:flex;align-items:baseline;gap:12px;font-weight:400;line-height:.9}
+  h1 .ja{font-family:var(--font-u);font-size:clamp(32px,5.5vw,58px);font-weight:300;letter-spacing:.06em}
+  h1 .la{font-family:var(--font-d);font-size:clamp(12px,1.4vw,17px);letter-spacing:.32em;color:var(--fg-dim);text-transform:uppercase}
+  .lede{margin:12px 0 0;max-width:29ch;font-size:12.5px;line-height:1.65;color:var(--fg-dim)}
+
+  /* right panel */
+  .rpanel{grid-column:3;grid-row:1/4;display:flex;flex-direction:column;gap:10px}
+
+  /* readout */
+  .readout{padding:13px 14px 11px;background:var(--panel);border:1px solid var(--line);
+    backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px)}
+  .readout h2{margin:0 0 9px;font-family:var(--font-d);font-size:9.5px;font-weight:400;
+    letter-spacing:.22em;color:var(--fg-dim);text-transform:uppercase;display:flex;justify-content:space-between}
+  #eeg{display:block;width:100%;height:44px}
+  .stats{margin:10px 0 0;display:grid;gap:4px;font-family:var(--font-m);font-size:10.5px;font-variant-numeric:tabular-nums}
+  .stats div{display:flex;justify-content:space-between;gap:8px}
+  .stats dt{font-family:var(--font-d);letter-spacing:.16em;color:var(--fg-faint);font-style:normal}
+  .stats dd{margin:0;color:var(--fg)}
+
+  /* chat */
+  .chat-box{flex:1;display:flex;flex-direction:column;background:var(--panel);border:1px solid var(--line);
+    backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px);overflow:hidden;min-height:0}
+  .chat-head{padding:8px 12px;border-bottom:1px solid var(--line);font-family:var(--font-d);
+    font-size:9.5px;letter-spacing:.22em;color:var(--fg-dim);text-transform:uppercase;display:flex;justify-content:space-between}
+  .chat-log{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:3px;padding:8px;min-height:0}
+  .chat-log::-webkit-scrollbar{width:2px}.chat-log::-webkit-scrollbar-thumb{background:var(--line-s)}
+  .msg-w{display:flex;flex-direction:column;gap:1px}
+  .msg-meta{font-size:6.5px;letter-spacing:.12em;color:var(--fg-faint);padding:0 2px;margin-top:3px}
+  .msg{padding:5px 8px;font-size:10.5px;line-height:1.55;word-break:break-word;white-space:pre-wrap}
+  .msg.user{color:#7db8e8;border-left:1px solid rgba(93,170,220,.5);background:rgba(93,170,220,.06)}
+  .msg.bot{color:#c8e8d0;border-left:1px solid rgba(95,227,166,.4);background:rgba(95,227,166,.05)}
+  .msg.sys{color:var(--fg-faint);text-align:center;font-size:8px;letter-spacing:.18em;padding:5px}
+  .chat-inp{border-top:1px solid var(--line);padding:7px 8px;display:flex;gap:5px}
+  .chat-inp input{flex:1;background:rgba(8,14,24,.8);color:var(--fg);border:1px solid var(--line);
+    border-radius:0;padding:5px 8px;font-family:var(--font-u);font-size:10.5px;outline:none}
+  .chat-inp input:focus{border-color:var(--line-s)}
+  .chat-inp input::placeholder{color:var(--fg-faint)}
+  .chat-inp button{background:none;color:var(--fg-dim);border:1px solid var(--line);padding:5px 10px;
+    font-family:var(--font-d);font-size:10px;letter-spacing:.12em;cursor:pointer;white-space:nowrap}
+  .chat-inp button:hover{color:var(--fg);border-color:var(--line-s)}
+  .chat-inp button:disabled{opacity:.3}
+  .aist{font-size:8px;color:var(--fg-faint);letter-spacing:.15em;text-align:center;min-height:11px;padding:1px 8px}
+
+  /* ── VOICE MODE ── */
+  /* ── VOICE ORB DOCK ── */
+  .voice-btn{background:none;border:0;color:var(--fg-faint);font-size:14px;cursor:pointer;padding:0 3px;line-height:1;transition:color .2s;vertical-align:middle}
+  .voice-btn:hover{color:var(--r0)}
+  .orb-dock{grid-column:1;grid-row:2;align-self:center;justify-self:center;
+    display:flex;flex-direction:column;align-items:center;gap:8px}
+  #orbCanvas{display:block;cursor:pointer;flex:none}
+  .orb-status{font-family:var(--font-d);font-size:8.5px;letter-spacing:.30em;color:var(--fg-faint);
+    text-transform:uppercase;text-align:center;transition:color .3s}
+  .orb-status.active{color:var(--r0)}
+  .orb-transcript{max-width:190px;text-align:center;font-size:11.5px;color:var(--fg);
+    line-height:1.6;white-space:pre-wrap;padding:7px 12px;display:none;
+    background:rgba(5,8,14,.80);border:1px solid var(--line);backdrop-filter:blur(8px)}
+  .orb-transcript.show{display:block}
+
+  /* legend */
+  .legend{grid-column:1;grid-row:3;align-self:end;display:grid;gap:1px;max-width:200px}
+  .legend>p{margin:0 0 7px;font-family:var(--font-d);font-size:9.5px;letter-spacing:.22em;color:var(--fg-dim);text-transform:uppercase}
+  .reg{display:grid;grid-template-columns:10px 1fr auto;align-items:center;gap:10px;
+    padding:5px 8px 5px 4px;background:none;border:0;border-left:1px solid transparent;
+    color:var(--fg-dim);font:inherit;font-size:12px;text-align:left;cursor:pointer;transition:.18s}
+  .reg:hover{color:var(--fg);background:var(--panel)}
+  .reg[aria-pressed=true]{color:var(--fg);background:var(--panel);border-left-color:currentColor}
+  .swatch{width:10px;height:10px;border-radius:50%;background:var(--c);
+    box-shadow:0 0 8px color-mix(in srgb,var(--c) 60%,transparent)}
+  .reg .sub{font-family:var(--font-d);font-size:9px;letter-spacing:.14em;color:var(--fg-faint)}
+
+  /* controls */
+  .controls{grid-column:2;grid-row:4;display:none}/* hidden, moved inside rpanel */
+
+  .ctrl-bar{padding:10px 12px;background:var(--panel);border:1px solid var(--line);backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px)}
+  .ctrl-row{display:flex;align-items:center;gap:10px;margin-bottom:5px}
+  .ctrl-row:last-child{margin:0}
+  .cap{font-family:var(--font-d);font-size:9px;letter-spacing:.2em;color:var(--fg-faint);text-transform:uppercase;width:70px;flex:none}
+  .switch{display:inline-flex;align-items:center;gap:7px;background:none;border:0;padding:0;
+    color:var(--fg-dim);font:inherit;font-size:11px;cursor:pointer}
+  .switch i{width:24px;height:11px;border:1px solid var(--line-s);position:relative;flex:none}
+  .switch i::after{content:"";position:absolute;top:1px;left:1px;width:9px;height:7px;background:var(--fg-faint);transition:.2s}
+  .switch[aria-pressed=true]{color:var(--fg)}.switch[aria-pressed=true] i::after{transform:translateX(11px);background:var(--r0)}
+  input[type=range]{-webkit-appearance:none;appearance:none;flex:1;height:11px;background:none;cursor:pointer}
+  input[type=range]::-webkit-slider-runnable-track{height:1px;background:var(--line-s)}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:8px;height:12px;margin-top:-6px;background:var(--fg);border:0}
+  .vbtn{padding:3px 8px;background:none;border:1px solid var(--line);color:var(--fg-dim);font:inherit;font-size:11px;cursor:pointer}
+  .vbtn:hover{color:var(--fg);border-color:var(--line-s)}
+  .hint{grid-column:2;grid-row:2;align-self:end;justify-self:center;font-family:var(--font-d);
+    font-size:9.5px;letter-spacing:.2em;color:var(--fg-faint);text-transform:uppercase;pointer-events:none;transition:opacity .5s;text-align:center}
+  .hint span{display:block;margin-top:4px;font-family:var(--font-u);font-size:10.5px;letter-spacing:.05em;text-transform:none}
+  .hint.gone{opacity:0}
+
+  /* ── VIA CHARACTER STRENGTHS ── */
+  .rpanel-tabs{display:flex;border-bottom:1px solid var(--line);flex-shrink:0}
+  .rpanel-tab{flex:1;padding:6px 0;background:none;border:0;border-bottom:2px solid transparent;
+    font-family:var(--font-d);font-size:8.5px;letter-spacing:.22em;color:var(--fg-faint);
+    text-transform:uppercase;cursor:pointer;transition:.18s;margin-bottom:-1px}
+  .rpanel-tab.active{color:#9B8BFF;border-bottom-color:#9B8BFF}
+  .rpanel-tab:hover:not(.active){color:var(--fg-dim)}
+  #pane-neural{display:flex;flex-direction:column;gap:10px;flex:1;overflow:hidden}
+  .via-panel{display:none;flex-direction:column;gap:7px;flex:1;overflow:hidden}
+  .via-panel.show{display:flex}
+  .via-map-wrap{padding:9px 11px 8px;background:var(--panel);border:1px solid var(--line);backdrop-filter:blur(9px);flex-shrink:0}
+  .via-map-wrap .via-head{font-family:var(--font-d);font-size:8.5px;letter-spacing:.22em;color:var(--fg-dim);text-transform:uppercase;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center}
+  #viaMap{display:block;width:100%;height:118px}
+  .via-filters{display:flex;flex-wrap:wrap;gap:3px;flex-shrink:0}
+  .via-pill{padding:2.5px 7px;background:none;border:1px solid var(--line);color:var(--fg-faint);
+    font-family:var(--font-d);font-size:7.5px;letter-spacing:.10em;cursor:pointer;transition:.15s}
+  .via-pill.active{color:#fff;border-color:var(--vc,#9B8BFF);background:rgba(var(--vcr,155,139,255),.25)}
+  .via-pill:hover:not(.active){color:var(--fg-dim);border-color:var(--line-s)}
+  .via-cards{flex:1;overflow-y:auto;display:grid;grid-template-columns:1fr 1fr;gap:3px;align-content:start}
+  .via-cards::-webkit-scrollbar{width:2px}.via-cards::-webkit-scrollbar-thumb{background:var(--line-s)}
+  .via-card{padding:5px 6px;background:var(--panel);border:1px solid var(--line);
+    border-left:2px solid var(--vc,var(--line));cursor:pointer;transition:.15s;text-align:left}
+  .via-card:hover,.via-card.selected{background:rgba(var(--vcr,155,139,255),.18);border-left-color:var(--vc)}
+  .via-card .vvk{font-family:var(--font-d);font-size:7.5px;color:var(--vc);letter-spacing:.08em}
+  .via-card .vvj{font-size:10px;line-height:1.25;margin:1px 0 0;color:var(--fg)}
+  .via-card .vve{font-size:7px;color:var(--fg-faint);letter-spacing:.05em;line-height:1.3}
+  /* VIA detail modal */
+  .via-modal{position:absolute;z-index:300;left:50%;top:50%;transform:translate(-50%,-50%);
+    width:min(320px,88vw);max-height:68vh;overflow-y:auto;
+    background:rgba(6,12,26,.97);border:1px solid var(--line-s);backdrop-filter:blur(20px);
+    padding:18px 20px;display:none}
+  .via-modal.show{display:block}
+  .via-modal-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:4px}
+  .vm-title{font-size:22px;font-weight:300;line-height:1;letter-spacing:.02em}
+  .vm-close{background:none;border:0;color:var(--fg-faint);font-size:14px;cursor:pointer;padding:2px;flex-shrink:0}
+  .vm-close:hover{color:var(--fg)}
+  .vm-badge{display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border:1px solid var(--vc,#9B8BFF);
+    font-family:var(--font-d);font-size:7.5px;letter-spacing:.16em;color:var(--vc,#9B8BFF);margin-bottom:11px}
+  .vm-def{font-size:11.5px;line-height:1.8;color:var(--fg-dim);margin-bottom:12px;border-left:1px solid var(--line);padding-left:10px}
+  .vm-zones{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:12px}
+  .vm-zone{padding:7px 9px;border:1px solid var(--line)}
+  .vm-zone-lbl{font-family:var(--font-d);font-size:7px;letter-spacing:.18em;color:var(--fg-faint);text-transform:uppercase;margin-bottom:3px}
+  .vm-zone-val{font-size:10px;color:var(--fg-dim);line-height:1.5}
+  .vm-rel-lbl{font-family:var(--font-d);font-size:7.5px;letter-spacing:.16em;color:var(--fg-faint);text-transform:uppercase;margin-bottom:5px}
+  .vm-tags{display:flex;flex-wrap:wrap;gap:3px}
+  .vm-tag{padding:2px 7px;border:1px solid var(--line);font-size:9px;color:var(--fg-dim);cursor:pointer;transition:.12s;background:none}
+  .vm-tag:hover{border-color:var(--line-s);color:var(--fg)}
+  .vm-brain{font-family:var(--font-d);font-size:7px;letter-spacing:.16em;color:var(--fg-faint);text-transform:uppercase;margin-top:11px;padding-top:9px;border-top:1px solid var(--line)}
+</style>
+
+<div class="stage" id="stage">
+  <canvas id="brain" tabindex="0"></canvas>
+  <div class="ticks" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+
+  <div class="hud">
+    <header class="masthead">
+      <p class="eyebrow">神経解剖アトラス — 第二の脳</p>
+      <h1><span class="ja">Mizuki</span><span class="la">Neural Construct</span></h1>
+      <p class="lede">点群で構築した神経ネットワーク。走る光は活動電位、色は思考領域を示す。</p>
+    </header>
+
+    <!-- VOICE ORB — left column center row, separate from brain -->
+    <div class="orb-dock" id="orbDock">
+      <canvas id="orbCanvas" width="200" height="200"></canvas>
+      <div class="orb-status" id="voiceStatus">タップして話す</div>
+      <div class="orb-transcript" id="voiceTranscript"></div>
+    </div>
+
+    <div class="rpanel">
+      <div class="rpanel-tabs">
+        <button class="rpanel-tab active" data-pane="neural">Neural 神経</button>
+        <button class="rpanel-tab" data-pane="via">VIA 徳性</button>
+      </div>
+
+      <div id="pane-neural">
+      <div class="readout">
+        <h2>Cortical Activity <span style="font-family:var(--font-u);letter-spacing:.08em">皮質活動</span></h2>
+        <canvas id="eeg"></canvas>
+        <dl class="stats">
+          <div><dt>Nodes</dt><dd id="s-nodes">—</dd></div>
+          <div><dt>Synapses</dt><dd id="s-edges">—</dd></div>
+          <div><dt>Spikes</dt><dd id="s-spikes">0</dd></div>
+          <div><dt>Top Zone</dt><dd style="color:var(--r0)">技術/python</dd></div>
+        </dl>
+      </div>
+
+      <div class="ctrl-bar">
+        <div class="ctrl-row">
+          <span class="cap">Rotation</span>
+          <button class="switch" id="t-auto" aria-pressed="true"><i></i><span>自動</span></button>
+        </div>
+        <div class="ctrl-row">
+          <span class="cap">Synapses</span>
+          <button class="switch" id="t-edges" aria-pressed="true"><i></i><span>表示</span></button>
+        </div>
+        <div class="ctrl-row">
+          <span class="cap">Activity</span>
+          <input type="range" id="r-act" min="0" max="100" value="62">
+        </div>
+        <div class="ctrl-row" style="gap:4px">
+          <button class="vbtn" data-view="lateral">側面</button>
+          <button class="vbtn" data-view="anterior">前面</button>
+          <button class="vbtn" data-view="superior">上面</button>
+        </div>
+      </div>
+
+      <div class="chat-box">
+        <div class="chat-head"><span>Neural Chat</span><span style="display:flex;align-items:center;gap:7px"><button class="voice-btn" id="voiceBtn" title="音声モード ▶ タップ">🎙</button><span id="ai-b" style="color:var(--r1)">STANDBY</span></span></div>
+        <div class="chat-log" id="clog"><div class="msg sys">[ NEURAL LINK READY ]</div></div>
+        <div class="aist" id="aist"></div>
+        <div class="chat-inp">
+          <input id="cin" placeholder="話しかける…" autocomplete="off"/>
+          <button id="sbtn">SEND</button>
+        </div>
+      </div>
+      </div><!-- /pane-neural -->
+
+      <div class="via-panel" id="pane-via">
+        <div class="via-map-wrap">
+          <div class="via-head"><span>2-Factor Map</span><span id="viaMapHint" style="font-family:var(--font-u);letter-spacing:.04em;text-transform:none;font-size:9px">24の強み</span></div>
+          <canvas id="viaMap" height="118"></canvas>
+        </div>
+        <div class="via-filters" id="viaFilters"></div>
+        <div class="via-cards" id="viaCards"></div>
+      </div>
+    </div>
+
+    <nav class="legend" aria-label="思考領域">
+      <p>Zones 思考領域</p>
+      <button class="reg" data-region="0" aria-pressed="false" style="--c:var(--r0)">
+        <span class="swatch"></span><span>技術 / python, AI, Streamlit…</span><span class="sub">FRONTAL</span>
+      </button>
+      <button class="reg" data-region="1" aria-pressed="false" style="--c:var(--r1)">
+        <span class="swatch"></span><span>学習 / 機械学習, 深層学習…</span><span class="sub">PARIETAL</span>
+      </button>
+      <button class="reg" data-region="2" aria-pressed="false" style="--c:var(--r2)">
+        <span class="swatch"></span><span>アイデア / 記憶, 開発…</span><span class="sub">TEMPORAL</span>
+      </button>
+      <button class="reg" data-region="3" aria-pressed="false" style="--c:var(--r3)">
+        <span class="swatch"></span><span>目標 / データ, 専用…</span><span class="sub">OCCIPITAL</span>
+      </button>
+      <button class="reg" data-region="4" aria-pressed="false" style="--c:var(--r4)">
+        <span class="swatch"></span><span>感情 / 楽しい, 疲れ…</span><span class="sub">CEREBELLUM</span>
+      </button>
+      <button class="reg" data-region="5" aria-pressed="false" style="--c:var(--r5)">
+        <span class="swatch"></span><span>人間関係 / 友達…</span><span class="sub">BRAINSTEM</span>
+      </button>
+    </nav>
+
+    <p class="hint" id="hint">Drag to rotate · Scroll to zoom<span>ドラッグで回転・ホイールで拡大</span></p>
+  </div>
+
+  <div class="via-modal" id="viaModal" role="dialog" aria-modal="true" aria-labelledby="vm-title">
+    <div class="via-modal-head">
+      <div>
+        <div class="vm-title" id="vm-title"></div>
+      </div>
+      <button class="vm-close" id="vm-close" aria-label="閉じる">✕</button>
+    </div>
+    <div class="vm-badge" id="vm-badge"></div>
+    <div class="vm-def" id="vm-def"></div>
+    <div class="vm-zones">
+      <div class="vm-zone">
+        <div class="vm-zone-lbl">Underuse 不足</div>
+        <div class="vm-zone-val" id="vm-under"></div>
+      </div>
+      <div class="vm-zone">
+        <div class="vm-zone-lbl">Overuse 過剰</div>
+        <div class="vm-zone-val" id="vm-over"></div>
+      </div>
+    </div>
+    <div class="vm-rel-lbl">相関する強み Correlated</div>
+    <div class="vm-tags" id="vm-tags"></div>
+    <div class="vm-brain" id="vm-brain"></div>
+  </div>
+
+</div>
+
+<script>
+(()=>{
+"use strict";
+const stage=document.getElementById('stage');
+const cv=document.getElementById('brain');
+const ctx=cv.getContext('2d',{alpha:false});
+const eeg=document.getElementById('eeg');
+const ectx=eeg.getContext('2d');
+const motQ=matchMedia('(prefers-reduced-motion:reduce)');
+let redMo=motQ.matches;
+
+// ── REGIONS ──
+const F=0,PA=1,T=2,O=3,CB=4,ST=5;
+const RVARS=['--r0','--r1','--r2','--r3','--r4','--r5'];
+const RLABELS=[['技術','FRONTAL LOBE'],['学習','PARIETAL LOBE'],['アイデア','TEMPORAL LOBE'],['目標','OCCIPITAL LOBE'],['感情','CEREBELLUM'],['人間関係','BRAINSTEM']];
+const RCONCEPTS=[['python','AI','Streamlit','ClaudeAPI','オセロ'],['機械学習','深層学習','勉強','精度'],['アイデア','記憶','開発'],['目標','データ','専用','GitHub'],['楽しい','疲れ'],['友達']];
+
+// ── GEOMETRY ──
+const CBB={x:0,y:-.215,z:-.375,rx:.238,ry:.132,rz:.172};
+function inCB(x,y,z,pad){
+  const dx=(x-CBB.x)/(CBB.rx+pad),dy=(y-CBB.y)/(CBB.ry+pad),dz=(z-CBB.z)/(CBB.rz+pad);
+  return dx*dx+dy*dy+dz*dz<1;}
+
+const GOLDEN=Math.PI*(3-Math.sqrt(5));
+function buildGeo(budget){
+  const X=[],Y=[],Z=[],R=[];
+  const n=budget.c,jit=3.4/Math.sqrt(n);
+  for(let i=0;i<n;i++){
+    const uy=1-(i/(n-1))*2,ur=Math.sqrt(Math.max(0,1-uy*uy)),th=i*GOLDEN;
+    let nx=Math.cos(th)*ur+(Math.random()-.5)*jit;
+    let ny=uy+(Math.random()-.5)*jit;
+    let nz=Math.sin(th)*ur+(Math.random()-.5)*jit;
+    const inv=1/Math.hypot(nx,ny,nz);nx*=inv;ny*=inv;nz*=inv;
+    let x=nx*.47,y=ny*.385,z=nz*.63;
+    if(z>0){const t=z/.63,f=1-.30*t*t;x*=f;y*=f;}
+    else{const t=-z/.63,f=1-.15*t*t*t;x*=f;y*=f*(1-.06*t);}
+    if(y<0)y*=.80;
+    if(z>-.32){const t=Math.max(0,Math.min(1,(-y-.01)/.14));x*=1+.14*t*t*(3-2*t);}
+    const ax=Math.abs(x),groove=Math.exp(-(ax*ax)/.0027);
+    if(y>0)y*=1-.34*groove;
+    x=(x<0?-1:1)*(ax*.96+.013);
+    const yl=.026-.35*z;let inS=0;
+    if(z>-.30&&z<.36&&Math.abs(x)>.075){
+      const d=(y-yl)/.040;inS=Math.exp(-d*d);
+      x-=nx*inS*.058;y-=ny*inS*.030;z-=nz*inS*.052;}
+    let reg;
+    if(z<-.28)reg=O;else if(y<yl&&z<.34)reg=T;else if(z>.21)reg=F;else reg=PA;
+    const fold=.74*Math.sin(nx*11.5+nz*3.1)*Math.sin(ny*9.3-nx*4.4)*Math.sin(nz*10.2+ny*5.6)+
+      .26*Math.sin(nx*20.5-ny*6.2)*Math.sin(nz*18.0+nx*7.5);
+    x+=nx*fold*.032*(1-.7*inS);y+=ny*fold*.029*(1-.7*inS);z+=nz*fold*.038*(1-.7*inS);
+    if(inCB(x,y,z,.02))continue;
+    X.push(x);Y.push(y);Z.push(z);R.push(reg);}
+
+  const m=budget.cb,jitc=2.6/Math.sqrt(m);
+  for(let i=0;i<m;i++){
+    const uy=1-(i/(m-1))*2,ur=Math.sqrt(Math.max(0,1-uy*uy)),th=i*GOLDEN;
+    let nx=Math.cos(th)*ur+(Math.random()-.5)*jitc;
+    let ny=uy+(Math.random()-.5)*jitc*.4;
+    let nz=Math.sin(th)*ur+(Math.random()-.5)*jitc;
+    const inv=1/Math.hypot(nx,ny,nz);nx*=inv;ny*=inv;nz*=inv;
+    let x=CBB.x+nx*CBB.rx,y=CBB.y+ny*CBB.ry,z=CBB.z+nz*CBB.rz;
+    const fol=Math.sin((y-CBB.y)*190)*.011;x+=nx*fol;y+=ny*fol*.4;z+=nz*fol;
+    const dip=Math.exp(-(x*x)/.0016)*.016;z+=dip*(nz>0?-1:1);
+    X.push(x);Y.push(y);Z.push(z);R.push(CB);}
+
+  const rings=budget.sr,prr=9;
+  for(let i=0;i<rings;i++){
+    const t=i/(rings-1),cy=-.09-t*.44,cz=-.05+t*.055-Math.sin(t*2.1)*.03,rad=.086-t*.036;
+    for(let j=0;j<prr;j++){
+      const a=(j/prr)*Math.PI*2+i*.4;
+      const x=Math.cos(a)*rad,z2=cz+Math.sin(a)*rad*.92,y2=cy+Math.sin(a*3+i)*.004;
+      if(y2>-.16&&inCB(x,y2,z2,-.03))continue;
+      X.push(x);Y.push(y2);Z.push(z2);R.push(ST);}}
+  return{X,Y,Z,R};}
+
+const isSmall=matchMedia('(max-width:900px)').matches;
+const geo=buildGeo(isSmall?{c:2200,cb:480,sr:30}:{c:3800,cb:780,sr:44});
+const COUNT=geo.X.length;
+const px=Float32Array.from(geo.X),py=Float32Array.from(geo.Y),pz=Float32Array.from(geo.Z);
+const preg=Uint8Array.from(geo.R);
+const pphase=new Float32Array(COUNT);
+const sx0=new Float32Array(COUNT),sy0=new Float32Array(COUNT),sz0=new Float32Array(COUNT);
+for(let i=0;i<COUNT;i++){
+  pphase[i]=-pz[i]*8.2+py[i]*2.4;
+  const r=1.5+Math.random()*1.4,a=Math.random()*Math.PI*2;
+  const c=Math.random()*2-1,s=Math.sqrt(1-c*c);
+  sx0[i]=Math.cos(a)*s*r;sy0[i]=c*r*.7;sz0[i]=Math.sin(a)*s*r;}
+
+// ── EDGES ──
+const nodes=[];for(let i=0;i<COUNT;i+=5)nodes.push(i);
+const ea=[],eb=[];const seen=new Set();
+const addE=(a,b)=>{const k=a<b?a*100003+b:b*100003+a;if(seen.has(k))return;seen.add(k);ea.push(a);eb.push(b);};
+const MD2=.105*.105;
+for(let i=0;i<nodes.length;i++){
+  const a=nodes[i],ax=px[a],ay=py[a],az=pz[a];
+  let b1=-1,b2=-1,d1=Infinity,d2=Infinity;
+  for(let j=0;j<nodes.length;j++){if(j===i)continue;const b=nodes[j];
+    const dx=px[b]-ax,dy=py[b]-ay,dz=pz[b]-az,d=dx*dx+dy*dy+dz*dz;
+    if(d>MD2)continue;if(d<d1){d2=d1;b2=b1;d1=d;b1=b;}else if(d<d2){d2=d;b2=b;}}
+  if(b1>=0)addE(a,b1);if(b2>=0&&Math.random()<.72)addE(a,b2);}
+for(let k=0;k<28;k++){
+  const a=nodes[(Math.random()*nodes.length)|0];
+  if(px[a]<0||Math.abs(pz[a])>.34)continue;
+  let best=-1,bestD=Infinity;
+  for(let t=0;t<80;t++){const c=nodes[(Math.random()*nodes.length)|0];if(px[c]>0)continue;
+    const dy=py[c]-py[a],dz=pz[c]-pz[a],d=dy*dy+dz*dz;if(d<bestD){bestD=d;best=c;}}
+  if(best>=0&&bestD<.0016)addE(a,best);}
+const EDGES=ea.length;
+const edgeAt=new Map();
+for(let e=0;e<EDGES;e++){
+  if(!edgeAt.has(ea[e]))edgeAt.set(ea[e],[]);if(!edgeAt.has(eb[e]))edgeAt.set(eb[e],[]);
+  edgeAt.get(ea[e]).push(e);edgeAt.get(eb[e]).push(e);}
+
+// ── PALETTE ──
+let isDark=true,regionRGB=[],regionHex=[],sparkRGB=[255,243,208],sprites=[],sparkSprite=null,lineRGB=[150,182,214],groundHex='#05080e',lineHex='rgba(150,182,214,0.18)';
+function h2r(h){h=h.trim().replace('#','');if(h.length===3)h=h[0]+h[0]+h[1]+h[1]+h[2]+h[2];const v=parseInt(h,16);return[(v>>16)&255,(v>>8)&255,v&255];}
+function makeSprite(rgb){
+  const S=32,c=document.createElement('canvas');c.width=c.height=S;const g=c.getContext('2d');
+  const gr=g.createRadialGradient(S/2,S/2,0,S/2,S/2,S/2);const col=`${rgb[0]},${rgb[1]},${rgb[2]}`;
+  gr.addColorStop(0,`rgba(${col},1)`);gr.addColorStop(.18,`rgba(${col},.72)`);gr.addColorStop(.48,`rgba(${col},.16)`);gr.addColorStop(1,`rgba(${col},0)`);
+  g.fillStyle=gr;g.fillRect(0,0,S,S);return c;}
+function refreshPal(){
+  const cs=getComputedStyle(document.documentElement);isDark=true;
+  regionHex=RVARS.map(v=>cs.getPropertyValue(v).trim());
+  regionRGB=regionHex.map(h2r);sparkRGB=h2r(cs.getPropertyValue('--spark').trim()||'#fff3d0');
+  lineRGB=[150,182,214];groundHex=cs.getPropertyValue('--ground').trim()||'#05080e';
+  lineHex=cs.getPropertyValue('--line').trim();
+  sprites=regionRGB.map(makeSprite);sparkSprite=makeSprite(sparkRGB);}
+refreshPal();
+
+// ── VIEW STATE ──
+const view={yaw:-.62,pitch:.16,zoom:1,auto:true,edges:true,activity:.62,isolate:-1,assembly:redMo?1:0};
+let tween=null,W=0,H=0,DPR=1;
+function resize(){
+  DPR=Math.min(window.devicePixelRatio||1,2);W=stage.clientWidth;H=stage.clientHeight;
+  cv.width=Math.round(W*DPR);cv.height=Math.round(H*DPR);ctx.setTransform(DPR,0,0,DPR,0,0);
+  const er=eeg.getBoundingClientRect();
+  eeg.width=Math.max(1,Math.round(er.width*DPR));eeg.height=Math.max(1,Math.round(er.height*DPR));
+  ectx.setTransform(DPR,0,0,DPR,0,0);}
+resize();new ResizeObserver(resize).observe(stage);
+
+// ── PULSES ──
+const pulses=[];let spikeCount=0;
+function spawnPulse(){const e=(Math.random()*EDGES)|0;pulses.push({e,t:0,dir:Math.random()<.5?1:-1,spd:.5+Math.random()*.8});spikeCount++;}
+function hopPulse(p){
+  const ep=p.dir>0?eb[p.e]:ea[p.e];const list=edgeAt.get(ep);if(!list||list.length<2)return false;
+  for(let t=0;t<4;t++){const ne=list[(Math.random()*list.length)|0];if(ne===p.e)continue;
+    p.e=ne;p.dir=ea[ne]===ep?1:-1;p.t=0;return true;}return false;}
+
+// ── RENDER ARRAYS ──
+const sxA=new Float32Array(COUNT),syA=new Float32Array(COUNT),skA=new Float32Array(COUNT),saA=new Float32Array(COUNT);
+const BINS=26;const bins=Array.from({length:BINS},()=>[]);
+const CAM_D=2.95,FOCAL=2.15;
+const K_MIN=FOCAL/(CAM_D+.72),K_MAX=FOCAL/(CAM_D-.72);
+const trace=new Float32Array(140);let traceHead=0,lastTrace=0;
+const easeOut=t=>1-Math.pow(1-t,3);
+const easeIO=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
+let last=performance.now(),time=0;
+
+function frame(now){
+  let dt=(now-last)/1000;last=now;if(dt>.1)dt=.1;time+=dt;
+  if(view.assembly<1)view.assembly=Math.min(1,view.assembly+dt/1.9);
+  if(tween){tween.t=Math.min(1,tween.t+dt/.75);const k=easeIO(tween.t);
+    view.yaw=tween.y0+(tween.y1-tween.y0)*k;view.pitch=tween.p0+(tween.p1-tween.p0)*k;if(tween.t>=1)tween=null;}
+  else if(view.auto&&!dragging&&!redMo)view.yaw+=dt*.19;
+  const cy=Math.cos(view.yaw),sy=Math.sin(view.yaw),cp=Math.cos(view.pitch),sp=Math.sin(view.pitch);
+  const S=Math.min(W,H)*.72*view.zoom,ox=W/2,oy=H/2+Math.min(W,H)*.02;
+  const asm=easeOut(view.assembly),morphing=view.assembly<1;
+  const aBase=.20,aGain=.80,aWave=.34;
+
+  for(let i=0;i<BINS;i++)bins[i].length=0;
+  for(let i=0;i<COUNT;i++){
+    let X=px[i],Y=py[i],Z=pz[i];
+    if(morphing){X=sx0[i]+(X-sx0[i])*asm;Y=sy0[i]+(Y-sy0[i])*asm;Z=sz0[i]+(Z-sz0[i])*asm;}
+    const x1=X*cy-Z*sy,z1=X*sy+Z*cy;
+    const y2=Y*cp-z1*sp,z2=Y*sp+z1*cp;
+    const k=FOCAL/(CAM_D-z2);
+    sxA[i]=ox+x1*k*S;syA[i]=oy-y2*k*S;skA[i]=k;
+    let depth=(k-K_MIN)/(K_MAX-K_MIN);depth=Math.max(0,Math.min(1,depth));
+    let a=aBase+aGain*depth*depth;
+    if(!redMo)a*=1-aWave+aWave*Math.sin(time*1.5+pphase[i])*(0.35+view.activity);
+    if(view.isolate>=0&&preg[i]!==view.isolate)a*=.09;
+    if(morphing)a*=.25+.75*asm;
+    saA[i]=a;
+    let bin=(depth*(BINS-1))|0;bin=Math.max(0,Math.min(BINS-1,bin));bins[bin].push(i);}
+
+  ctx.globalCompositeOperation='source-over';ctx.globalAlpha=1;ctx.fillStyle=groundHex;ctx.fillRect(0,0,W,H);
+  ctx.globalCompositeOperation='lighter';
+
+  // edges
+  if(view.edges){
+    const lc=`${lineRGB[0]},${lineRGB[1]},${lineRGB[2]}`;ctx.lineWidth=.7;
+    const G=5;
+    for(let g=0;g<G;g++){
+      ctx.beginPath();let any=false;
+      for(let e=0;e<EDGES;e++){
+        const a=ea[e],b=eb[e];
+        const d=(skA[a]+skA[b])*.5,t=(d-K_MIN)/(K_MAX-K_MIN),gi=Math.min(G-1,Math.max(0,(t*G)|0));
+        if(gi!==g)continue;if(view.isolate>=0&&preg[a]!==view.isolate&&preg[b]!==view.isolate)continue;
+        ctx.moveTo(sxA[a],syA[a]);ctx.lineTo(sxA[b],syA[b]);any=true;}
+      if(any){const base=.30;ctx.strokeStyle=`rgba(${lc},${(base*(.22+(g/(G-1))*.9)*(morphing?asm:1)).toFixed(3)})`;ctx.stroke();}}}
+
+  // points
+  const sizeBase=3.05*(S/620),spread=3.1;
+  for(let bi=0;bi<BINS;bi++){const list=bins[bi];
+    for(let q=0;q<list.length;q++){
+      const i=list[q],a=saA[i];if(a<.02)continue;
+      const s=sizeBase*skA[i]*spread;
+      ctx.globalAlpha=Math.min(1,a);ctx.drawImage(sprites[preg[i]],sxA[i]-s/2,syA[i]-s/2,s,s);}}
+  ctx.globalAlpha=1;
+
+  // pulses
+  if(!redMo&&view.activity>.01&&view.assembly>.55){
+    const tgt=Math.round(6+view.activity*88);
+    while(pulses.length<tgt&&Math.random()<.55)spawnPulse();
+    while(pulses.length>tgt)pulses.pop();
+    const headSize=sizeBase*spread*2.5;
+    for(let i=pulses.length-1;i>=0;i--){
+      const p=pulses[i];p.t+=dt*p.spd*(.5+view.activity);
+      if(p.t>=1){spikeCount++;if(!hopPulse(p)){p.e=(Math.random()*EDGES)|0;p.t=0;p.dir=1;}}
+      const a=p.dir>0?ea[p.e]:eb[p.e],b=p.dir>0?eb[p.e]:ea[p.e];
+      if(view.isolate>=0&&preg[a]!==view.isolate&&preg[b]!==view.isolate)continue;
+      const t=p.t,x=sxA[a]+(sxA[b]-sxA[a])*t,y=syA[a]+(syA[b]-syA[a])*t;
+      const tt=Math.max(0,t-.42),tx2=sxA[a]+(sxA[b]-sxA[a])*tt,ty2=syA[a]+(syA[b]-syA[a])*tt;
+      const k=(skA[a]+skA[b])*.5,depth=Math.min(1,Math.max(0,(k-K_MIN)/(K_MAX-K_MIN)));
+      const glow=(.35+depth*.65)*Math.sin(Math.min(1,t*1.6)*Math.PI)**.5;
+      ctx.strokeStyle=`rgba(${sparkRGB[0]},${sparkRGB[1]},${sparkRGB[2]},${(glow*.5).toFixed(3)})`;
+      ctx.lineWidth=1.1;ctx.beginPath();ctx.moveTo(tx2,ty2);ctx.lineTo(x,y);ctx.stroke();
+      const hs=headSize*k*.55;ctx.globalAlpha=Math.min(1,glow);
+      ctx.drawImage(sparkSprite,x-hs/2,y-hs/2,hs,hs);ctx.globalAlpha=1;}}
+
+  // concept labels overlay
+  ctx.globalCompositeOperation='source-over';
+  if(view.isolate>=0){drawAnnotation(view.isolate);}
+  else if(!morphing){
+    // draw top concept names at each region centroid
+    const rcx=new Float32Array(6),rcy=new Float32Array(6),rcn=new Float32Array(6);
+    for(let i=0;i<COUNT;i+=3){rcx[preg[i]]+=sxA[i];rcy[preg[i]]+=syA[i];rcn[preg[i]]++;}
+    RCONCEPTS.forEach((concepts,ri)=>{
+      if(!rcn[ri])return;
+      const cx2=rcx[ri]/rcn[ri],cy2=rcy[ri]/rcn[ri];
+      const col=regionHex[ri];
+      concepts.slice(0,2).forEach((name,k)=>{
+        ctx.font=`${k===0?'bold 9.5':'8'}px "Segoe UI","Hiragino Sans",system-ui,sans-serif`;
+        ctx.fillStyle=k===0?col:'rgba('+regionRGB[ri][0]+','+regionRGB[ri][1]+','+regionRGB[ri][2]+',.65)';
+        ctx.globalAlpha=.75-k*.25;
+        ctx.textAlign='center';
+        ctx.shadowColor='#000';ctx.shadowBlur=5;
+        ctx.fillText(name,cx2,cy2-12+k*14);ctx.shadowBlur=0;});
+      ctx.globalAlpha=1;});}
+
+  if(now-lastTrace>42){
+    lastTrace=now;
+    const act=redMo?.12:(pulses.length/95)*(.55+.45*Math.sin(time*2.3));
+    trace[traceHead]=Math.max(0,Math.min(1,Math.abs(act)+Math.random()*.14));
+    traceHead=(traceHead+1)%trace.length;drawTrace();
+    document.getElementById('s-spikes').textContent=spikeCount.toLocaleString('en-US');}
+  requestAnimationFrame(frame);}
+
+function drawAnnotation(reg){
+  let cx2=0,cy2=0,cnt=0;
+  for(let i=0;i<COUNT;i++){if(preg[i]!==reg)continue;cx2+=sxA[i];cy2+=syA[i];cnt++;}
+  if(!cnt)return;cx2/=cnt;cy2/=cnt;
+  const dir=cx2>W/2?-1:1;
+  const lx=Math.max(70,Math.min(W-70,cx2+dir*Math.min(150,W*.16)));
+  const ly=Math.max(56,cy2-62);
+  const col=regionHex[reg];
+  ctx.strokeStyle=col;ctx.globalAlpha=.75;ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(cx2,cy2);ctx.lineTo(lx,ly);ctx.lineTo(lx+dir*34,ly);ctx.stroke();
+  ctx.beginPath();ctx.arc(cx2,cy2,3,0,Math.PI*2);ctx.stroke();
+  ctx.globalAlpha=1;ctx.fillStyle=col;ctx.textBaseline='alphabetic';ctx.textAlign=dir>0?'left':'right';
+  const tx=lx+dir*40;
+  ctx.font='300 17px "Segoe UI","Hiragino Sans","Noto Sans JP",system-ui,sans-serif';
+  ctx.fillText(RLABELS[reg][0],tx,ly+2);
+  ctx.font='400 9.5px Bahnschrift,"DIN Alternate","Roboto Condensed",system-ui,sans-serif';
+  ctx.globalAlpha=.7;ctx.letterSpacing='.14em';ctx.fillText(RLABELS[reg][1],tx,ly+16);
+  ctx.letterSpacing='0px';ctx.globalAlpha=1;
+  // concept list
+  const cons=RCONCEPTS[reg];
+  ctx.font='11px "Segoe UI","Hiragino Sans",system-ui,sans-serif';
+  ctx.globalAlpha=.65;
+  cons.forEach((c,k)=>{ctx.fillText('· '+c,tx,ly+34+k*15);});}
+
+function drawTrace(){
+  const w=eeg.clientWidth,h=eeg.clientHeight;if(!w||!h)return;
+  ectx.clearRect(0,0,w,h);
+  ectx.strokeStyle=lineHex;ectx.lineWidth=1;
+  ectx.beginPath();ectx.moveTo(0,h-.5);ectx.lineTo(w,h-.5);ectx.moveTo(0,.5);ectx.lineTo(w,.5);ectx.stroke();
+  ectx.strokeStyle=regionHex[0];ectx.lineWidth=1.2;ectx.beginPath();
+  const n=trace.length;
+  for(let i=0;i<n;i++){const v=trace[(traceHead+i)%n],x=(i/(n-1))*w,y=h-3-v*(h-7);
+    i?ectx.lineTo(x,y):ectx.moveTo(x,y);}ectx.stroke();}
+
+// ── INTERACTION ──
+let dragging=false,lastX=0,lastY=0,moved=false;
+const hint=document.getElementById('hint');
+const clampP=p=>Math.max(-1.42,Math.min(1.42,p));
+cv.addEventListener('pointerdown',e=>{dragging=true;moved=false;lastX=e.clientX;lastY=e.clientY;tween=null;cv.classList.add('dragging');cv.setPointerCapture(e.pointerId);});
+cv.addEventListener('pointermove',e=>{if(!dragging)return;const dx=e.clientX-lastX,dy=e.clientY-lastY;lastX=e.clientX;lastY=e.clientY;if(Math.abs(dx)+Math.abs(dy)>2){moved=true;hint.classList.add('gone');}view.yaw+=dx*.0062;view.pitch=clampP(view.pitch+dy*.0052);});
+const endDrag=e=>{if(!dragging)return;dragging=false;cv.classList.remove('dragging');if(e.pointerId!=null&&cv.hasPointerCapture(e.pointerId))cv.releasePointerCapture(e.pointerId);};
+cv.addEventListener('pointerup',endDrag);cv.addEventListener('pointercancel',endDrag);
+cv.addEventListener('wheel',e=>{e.preventDefault();view.zoom=Math.max(.62,Math.min(2.3,view.zoom*(e.deltaY>0?.92:1.087)));hint.classList.add('gone');},{passive:false});
+cv.addEventListener('keydown',e=>{const s=.14;if(e.key==='ArrowLeft')view.yaw-=s;else if(e.key==='ArrowRight')view.yaw+=s;else if(e.key==='ArrowUp')view.pitch=clampP(view.pitch-s);else if(e.key==='ArrowDown')view.pitch=clampP(view.pitch+s);else return;e.preventDefault();tween=null;hint.classList.add('gone');});
+
+const autoBtn=document.getElementById('t-auto');
+autoBtn.addEventListener('click',()=>{view.auto=!view.auto;autoBtn.setAttribute('aria-pressed',String(view.auto));autoBtn.lastChild.textContent=view.auto?'自動':'停止';});
+const edgeBtn=document.getElementById('t-edges');
+edgeBtn.addEventListener('click',()=>{view.edges=!view.edges;edgeBtn.setAttribute('aria-pressed',String(view.edges));edgeBtn.lastChild.textContent=view.edges?'表示':'非表示';});
+document.getElementById('r-act').addEventListener('input',e=>{view.activity=e.target.value/100;});
+const VIEWS={lateral:[-.5*Math.PI,0],anterior:[0,.05],superior:[0,1.35]};
+document.querySelectorAll('[data-view]').forEach(btn=>{
+  btn.addEventListener('click',()=>{const[y1,p1]=VIEWS[btn.dataset.view];const turns=Math.round((view.yaw-y1)/(Math.PI*2));tween={t:0,y0:view.yaw,y1:y1+turns*Math.PI*2,p0:view.pitch,p1};view.auto=false;autoBtn.setAttribute('aria-pressed','false');autoBtn.lastChild.textContent='停止';hint.classList.add('gone');});});
+const regBtns=[...document.querySelectorAll('.reg')];
+regBtns.forEach(btn=>{btn.addEventListener('click',()=>{const r=Number(btn.dataset.region);view.isolate=view.isolate===r?-1:r;regBtns.forEach(b=>b.setAttribute('aria-pressed',String(Number(b.dataset.region)===view.isolate)));});});
+window._isolateRegion=r=>{view.isolate=r;regBtns.forEach(b=>b.setAttribute('aria-pressed',String(Number(b.dataset.region)===r)));};
+
+document.getElementById('s-nodes').textContent=COUNT.toLocaleString('en-US');
+document.getElementById('s-edges').textContent=EDGES.toLocaleString('en-US');
+setTimeout(()=>hint.classList.add('gone'),9000);
+motQ.addEventListener('change',e=>{redMo=e.matches;});
+requestAnimationFrame(frame);
+})();
+
+// ── CHAT ──────────────────────────────────────────────────────
+(async()=>{
+const clog=document.getElementById('clog'),cin=document.getElementById('cin'),sbtn=document.getElementById('sbtn'),aist=document.getElementById('aist');
+let sampleAPI=null;
+const SYS={role:"user",content:`あなたはMizukiの専属AIパートナー「ミズキBot」。Mizukiは日本人AI・Python開発者。AIオセロ(minimax)、Streamlit脳内マップ、ClaudeAPI統合など制作。脳内TOP: python×8, AI×7, 機械学習×6。フレンドリーかつ技術的に3〜4文日本語で返答。絵文字適度に。`};
+const turns=[SYS];
+function addMsg(role,text){
+  const wrap=document.createElement('div');wrap.className='msg-w';
+  const now=new Date();const ts=String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
+  wrap.innerHTML=`<div class="msg-meta">${ts} ${role==='user'?'USER':'NEURAL-AI'}</div><div class="msg ${role}">${text}</div>`;
+  clog.appendChild(wrap);clog.scrollTop=clog.scrollHeight;return wrap.querySelector('.msg');}
+async function send(){
+  const t=cin.value.trim();if(!t)return;
+  cin.value='';sbtn.disabled=true;cin.disabled=true;
+  addMsg('user',t);turns.push({role:'user',content:t});
+  const bot=addMsg('bot','…');aist.textContent='考え中…';
+  if(!sampleAPI){
+    await new Promise(r=>setTimeout(r,700));
+    const demos={'おはよう':'☀️ おはよう！脳内では「python」と「AI」が最も活性化してるよ🧠\n今日は何を作る？',
+      'ai':'🔥 AIゾーン全開！python × AI × 機械学習が密接につながってる。\n深層学習も増加中📈',
+      '覚えてる':'📋 記憶:\n・AIオセロ (minimax α-β深さ6)\n・Streamlit 3D脳内マップ\n・Claude APIチャットボット\nどれか詳しく話す？',
+      'アイデア':'💡 アイデアゾーン点灯！\n記憶自動タグ付け × 関連アイデア提案がおすすめ！'};
+    const key=Object.keys(demos).find(k=>t.includes(k));
+    const reply=key?demos[key]:`「${t}」受信。\nデモモード動作中。claude.aiで開くと本物のAIが応答するよ！\n試して: 「おはよう」「AI」「覚えてる？」`;
+    bot.textContent=reply;turns.push({role:'assistant',content:reply});
+  } else {
+    try{let first=true;
+      await sampleAPI([...turns],{cache:false,modelTier:'quick',onText:({text:tx})=>{if(first){bot.textContent='';first=false;}bot.textContent=tx;clog.scrollTop=clog.scrollHeight;}});
+      turns.push({role:'assistant',content:bot.textContent});
+      if(turns.length>16)turns.splice(1,turns.length-16);
+    }catch(e){bot.textContent=e.text||e.message||'エラー';}
+  }
+  aist.textContent='';sbtn.disabled=false;cin.disabled=false;cin.focus();}
+sbtn.onclick=send;cin.onkeydown=e=>{if(e.key==='Enter'&&!e.shiftKey)send();};
+
+try{if(window.claude){sampleAPI=await window.claude.use('sample');document.getElementById('ai-b').textContent='CLAUDE LIVE';document.getElementById('ai-b').style.color='var(--r0)';}}catch(_){}
+await new Promise(r=>setTimeout(r,400));
+const h=new Date().getHours();
+const gr=h<10?'おはよう！':h<18?'こんにちは！':'お疲れ様！';
+const bot=addMsg('bot',`${gr} Mizukiの第二の脳が起動🧠\n\n47コンセプト / 12記憶 / 22リンク\n「python」「AI」が最高活性中！\n\n話しかけてね。`);
+turns.push({role:'assistant',content:bot.textContent});
+})();
+
+// ── VOICE ORB ──────────────────────────────────────────────────
+(()=>{
+'use strict';
+const orb=document.getElementById('orbCanvas');
+const oc=orb.getContext('2d');
+const statusEl=document.getElementById('voiceStatus');
+const transEl=document.getElementById('voiceTranscript');
+const voiceBtn=document.getElementById('voiceBtn');
+
+// State: 'idle' | 'listening' | 'thinking' | 'speaking'
+let state='idle',amp=0,targetAmp=0,orbT=0,raf=null;
+let analyser=null,dataArr=null,voiceSample=null;
+
+// ── Mic ──
+async function initMic(){
+  try{
+    const stream=await navigator.mediaDevices.getUserMedia({audio:true,video:false});
+    const ac=new AudioContext();
+    const src=ac.createMediaStreamSource(stream);
+    analyser=ac.createAnalyser();analyser.fftSize=256;
+    src.connect(analyser);dataArr=new Uint8Array(analyser.frequencyBinCount);
+  }catch(_){}
+}
+function getMicAmp(){
+  if(!analyser)return 0;
+  analyser.getByteFrequencyData(dataArr);
+  let s=0;for(let i=0;i<dataArr.length;i++)s+=dataArr[i];
+  return Math.min(1,(s/dataArr.length)/90);
+}
+
+// ── RAINBOW MULTI-LAYER FLOWER PETAL ORB ──
+const SZ=200,CX=100,CY=100;
+
+// Full rainbow spectrum — each petal gets its own hue as it cycles
+const RAINBOW=[
+  '255,55,85',    // red
+  '255,110,40',   // orange
+  '240,210,40',   // yellow
+  '60,210,100',   // green
+  '40,200,230',   // cyan
+  '70,110,255',   // blue
+  '160,70,255',   // violet
+  '240,70,190',   // magenta
+];
+
+// 5 petal layers: outer→inner, each rotating at different speed/direction
+const PETAL_LAYERS=[
+  {n:8, len:76, wid:27, spd:.11,  ph:0},      // outermost, slow
+  {n:7, len:63, wid:22, spd:-.16, ph:.52},
+  {n:6, len:50, wid:18, spd:.22,  ph:1.05},
+  {n:5, len:38, wid:14, spd:-.28, ph:1.62},
+  {n:4, len:27, wid:10, spd:.36,  ph:2.20},   // innermost, fastest
+];
+
+function drawPetal(len,wid,col,alpha){
+  oc.beginPath();
+  oc.moveTo(0,0);
+  oc.bezierCurveTo( wid, len*.30,  wid*.88, len*.72,  0, len);
+  oc.bezierCurveTo(-wid*.88, len*.72, -wid, len*.30,  0, 0);
+  const g=oc.createLinearGradient(0,0,0,len);
+  g.addColorStop(0,   `rgba(${col},0)`);
+  g.addColorStop(.15, `rgba(${col},${alpha*.5})`);
+  g.addColorStop(.42, `rgba(${col},${alpha})`);
+  g.addColorStop(.70, `rgba(${col},${alpha*.72})`);
+  g.addColorStop(1,   `rgba(${col},0.03)`);
+  oc.fillStyle=g;oc.fill();
+}
+
+function drawOrb(){
+  orbT+=0.016;
+  if(state==='listening')      targetAmp=getMicAmp();
+  else if(state==='speaking')  targetAmp=.28+Math.sin(orbT*4.8)*.18+Math.sin(orbT*11)*.07;
+  else if(state==='thinking')  targetAmp=.09+Math.sin(orbT*1.9)*.045;
+  else                         targetAmp=.042+Math.sin(orbT*.9)*.022;
+  amp+=(targetAmp-amp)*.12;
+
+  const speedMul=state==='idle'?1:state==='thinking'?2.2:4;
+
+  oc.clearRect(0,0,SZ,SZ);oc.globalAlpha=1;oc.globalCompositeOperation='source-over';
+
+  // rainbow atmospheric glow (cycles through hues)
+  const hueShift=orbT*20%360;
+  const aR=94+amp*28;
+  const aura=oc.createRadialGradient(CX,CY,6,CX,CY,aR);
+  aura.addColorStop(0,`hsla(${hueShift},90%,65%,${.07+amp*.16})`);
+  aura.addColorStop(.5,`hsla(${(hueShift+120)%360},85%,55%,${.03+amp*.06})`);
+  aura.addColorStop(1,'rgba(5,8,14,0)');
+  oc.fillStyle=aura;oc.beginPath();oc.arc(CX,CY,aR,0,Math.PI*2);oc.fill();
+
+  // ── 5 rainbow petal layers — lighter blend ──
+  oc.globalCompositeOperation='lighter';
+  PETAL_LAYERS.forEach(({n,len,wid,spd,ph},li)=>{
+    const baseRot=orbT*spd*speedMul+ph;
+    const l=len*(1+amp*.34);
+    const w=wid*(1+amp*.24);
+    const alpha=.68+amp*.32;
+    // each layer's color palette offset shifts with time for slow rainbow spin
+    const colOffset=Math.floor(orbT*spd*.5*RAINBOW.length+li*1.3)%RAINBOW.length;
+    for(let i=0;i<n;i++){
+      const angle=baseRot+(i/n)*Math.PI*2;
+      const lw=l*(1+.055*Math.sin(orbT*2.6+i*1.2+ph));
+      const col=RAINBOW[((colOffset+i)%RAINBOW.length+RAINBOW.length)%RAINBOW.length];
+      oc.save();oc.translate(CX,CY);oc.rotate(angle);
+      drawPetal(lw,w,col,alpha);
+      oc.restore();}});
+
+  // ── white glowing core ──
+  oc.globalCompositeOperation='source-over';oc.globalAlpha=1;
+  const cR=16+amp*9;
+  // rainbow plasma halo
+  const halo=oc.createRadialGradient(CX,CY,cR*.3,CX,CY,cR*3.4);
+  halo.addColorStop(0,`hsla(${hueShift},85%,72%,${.44+amp*.34})`);
+  halo.addColorStop(.35,`hsla(${(hueShift+90)%360},80%,60%,${.18+amp*.12})`);
+  halo.addColorStop(1,'rgba(5,8,14,0)');
+  oc.fillStyle=halo;oc.beginPath();oc.arc(CX,CY,cR*3.4,0,Math.PI*2);oc.fill();
+  // white sphere
+  const cg=oc.createRadialGradient(CX-6,CY-5,0,CX,CY,cR);
+  cg.addColorStop(0,'rgba(255,255,255,1)');
+  cg.addColorStop(.22,'rgba(220,248,255,.86)');
+  cg.addColorStop(.58,'rgba(160,200,255,.30)');
+  cg.addColorStop(1,'rgba(100,140,255,0)');
+  oc.fillStyle=cg;oc.beginPath();oc.arc(CX,CY,cR,0,Math.PI*2);oc.fill();
+  oc.shadowColor='rgba(255,255,255,.95)';oc.shadowBlur=16+amp*22;
+  oc.beginPath();oc.arc(CX,CY,cR*.42,0,Math.PI*2);oc.fill();oc.shadowBlur=0;
+
+  // listening ripples (rainbow)
+  if(state==='listening'&&amp>.04){
+    for(let r=0;r<3;r++){
+      oc.beginPath();oc.arc(CX,CY,34+amp*58+r*19*(1-amp*.4),0,Math.PI*2);
+      oc.strokeStyle=`hsla(${(hueShift+r*60)%360},90%,65%,${(.30-r*.08)*amp})`;
+      oc.lineWidth=1.1+amp;oc.stroke();}}
+
+  raf=requestAnimationFrame(drawOrb);}
+
+// ── State ──
+const STATUS={idle:'タップして話す',listening:'聴いています…',thinking:'考え中…',speaking:'話しています…'};
+function setState(s){
+  state=s;
+  statusEl.textContent=STATUS[s]||s;
+  statusEl.className='orb-status'+(s!=='idle'?' active':'');
+  if(s==='idle'||s==='speaking'){transEl.classList.remove('show');}
+  else if(s==='thinking'){transEl.classList.add('show');}
+}
+
+// ── SpeechRecognition ──
+const SpeechR=window.SpeechRecognition||window.webkitSpeechRecognition;
+let rec=null;
+if(SpeechR){
+  rec=new SpeechR();rec.lang='ja-JP';rec.interimResults=true;rec.maxAlternatives=1;
+  rec.onresult=e=>{
+    let interim='',final='';
+    for(let i=e.resultIndex;i<e.results.length;i++){
+      const t=e.results[i][0].transcript;
+      e.results[i].isFinal?final+=t:interim+=t;}
+    transEl.textContent=final||interim;transEl.classList.add('show');
+    if(final){rec.stop();handleVoiceInput(final);}};
+  rec.onerror=()=>setState('idle');
+  rec.onend=()=>{if(state==='listening')setState('idle');};}
+
+// ── TTS ──
+const synth=window.speechSynthesis;
+function speak(text){
+  if(!synth){setState('idle');return;}
+  synth.cancel();
+  const u=new SpeechSynthesisUtterance(text);
+  u.lang='ja-JP';u.rate=1.05;u.pitch=1.08;
+  const jv=synth.getVoices().find(v=>v.lang.startsWith('ja'));if(jv)u.voice=jv;
+  u.onstart=()=>{transEl.textContent=text;transEl.classList.add('show');};
+  u.onend=()=>{setState('idle');transEl.classList.remove('show');};
+  u.onerror=()=>setState('idle');
+  synth.speak(u);}
+
+// ── AI response ──
+async function handleVoiceInput(text){
+  setState('thinking');transEl.textContent=text;transEl.classList.add('show');
+  const DEMOS={'おはよう':'おはよう！脳内では「python」と「AI」が最も活性化してるよ🧠\n今日は何を作る？','ai':'AIゾーン全開！python × AI × 機械学習がつながってるね。深層学習も増加中📈','python':'pythonが最も活性化してる！機械学習・Streamlit・オセロ全部つながってるよ🐍','記憶':'📋 覚えてる: AIオセロ・Streamlit脳内マップ・ClaudeAPI統合\nどれか詳しく話す？','アイデア':'💡 アイデアゾーン点灯！記憶自動タグ付け × 関連アイデア提案、どれから始める？'};
+  const key=Object.keys(DEMOS).find(k=>text.includes(k));
+  let reply=key?DEMOS[key]:`「${text}」受信！\nデモモード中。claude.aiで開くと本物のAIが答えるよ。\n試して: 「おはよう」「AI」「python」`;
+  if(voiceSample){
+    try{
+      const t=[{role:'user',content:`あなたはMizukiの専属AIパートナー「ミズキBot」。Mizukiは日本人AI・Python開発者。AIオセロ・Streamlit脳内マップ・ClaudeAPI統合を制作。フレンドリーかつ技術的に2〜3文日本語で返答。絵文字適度に。`},{role:'user',content:text}];
+      let r='';
+      await voiceSample(t,{cache:false,modelTier:'quick',onText:({text:tx})=>{r=tx;}});
+      reply=r||reply;
+    }catch(e){reply=e.text||reply;}
+  }else await new Promise(r=>setTimeout(r,900));
+  setState('speaking');speak(reply);}
+
+// ── Click orb to listen ──
+orb.addEventListener('click',async()=>{
+  if(state==='thinking'||state==='speaking')return;
+  if(state==='listening'){if(rec)rec.stop();return;}
+  if(!analyser)await initMic();
+  if(!rec){transEl.textContent='Chrome / Edgeをお試しください。';transEl.classList.add('show');return;}
+  setState('listening');transEl.textContent='';transEl.classList.remove('show');
+  try{rec.start();}catch(_){setState('idle');}});
+
+// Chat header mic button also starts listening
+if(voiceBtn)voiceBtn.addEventListener('click',()=>orb.click());
+
+// Start orb animation immediately
+raf=requestAnimationFrame(drawOrb);
+
+(async()=>{try{if(window.claude)voiceSample=await window.claude.use('sample');}catch(_){}})();
+if(synth){synth.getVoices();synth.addEventListener('voiceschanged',()=>synth.getVoices());}
+})();
+
+// ── VIA CHARACTER STRENGTHS ─────────────────────────────────────
+(()=>{
+'use strict';
+
+// 6 virtues → brain region index (0 FRONTAL, 1 PARIETAL, 2 TEMPORAL, 3 OCCIPITAL, 4 CEREBELLUM, 5 BRAINSTEM)
+const VIRTUE={
+  wis:{jp:'知恵',en:'Wisdom',hex:'#9B8BFF',rgb:'155,139,255',reg:0,regJp:'技術 / FRONTAL'},
+  cou:{jp:'勇気',en:'Courage',hex:'#FF5A72',rgb:'255,90,114',reg:1,regJp:'学習 / PARIETAL'},
+  tra:{jp:'超越性',en:'Transcendence',hex:'#C07CF0',rgb:'192,124,240',reg:2,regJp:'アイデア / TEMPORAL'},
+  tem:{jp:'節制',en:'Temperance',hex:'#3CC870',rgb:'60,200,112',reg:3,regJp:'目標 / OCCIPITAL'},
+  hum:{jp:'人間性',en:'Humanity',hex:'#FF8B5C',rgb:'255,139,92',reg:4,regJp:'感情 / CEREBELLUM'},
+  jus:{jp:'正義',en:'Justice',hex:'#38A8E0',rgb:'56,168,224',reg:5,regJp:'人間関係 / BRAINSTEM'},
+};
+
+// x: 内向(-1) ↔ 対人(+1)   y: 感情(-1) ↔ 理性(+1)
+const S=[
+{k:'創',jp:'創造性',en:'Creativity',v:'wis',x:-.56,y:.24,def:'独自性と実用性を兼ね備えた新しいものを生み出す力。既存の枠に収まらない発想で問題を解く。',under:'守旧・発想の停滞',over:'奇抜さが独走し実用を失う',top:['好奇心','勇敢さ','大局観','熱意']},
+{k:'好',jp:'好奇心',en:'Curiosity',v:'wis',x:-.44,y:.08,def:'新しい経験・知識・アイデアへ開かれた関心。曖昧さを楽しみ、探索そのものに喜びを見出す。',under:'無関心・退屈',over:'気が散る・深掘り不足',top:['創造性','向学心','大局観','熱意']},
+{k:'判',jp:'判断力',en:'Judgment',v:'wis',x:-.28,y:.72,def:'物事を多角的に検討し、証拠に基づいて結論を出す。自分の信念すら検証対象にする。',under:'優柔不断・鵜呑み',over:'懐疑が過剰で決めきれない',top:['向学心','大局観','誠実さ','思慮深さ']},
+{k:'向',jp:'向学心',en:'Love of Learning',v:'wis',x:-.58,y:.52,def:'スキルと知識の習得そのものに情熱を持つ。学ぶ過程が報酬になる。',under:'惰性・機械的作業',over:'知識の披瀝・実践の欠如',top:['好奇心','判断力','創造性','誠実さ']},
+{k:'観',jp:'大局観',en:'Perspective',v:'wis',x:-.18,y:.58,def:'自分と他者の双方にとって意味のある視座を提供する。部分と全体を同時に見る力。',under:'視野の狭さ・短絡',over:'説教的・上から目線',top:['判断力','誠実さ','向学心','社会的知性']},
+{k:'敢',jp:'勇敢さ',en:'Bravery',v:'cou',x:-.38,y:.65,def:'脅威・困難・反対に怯まず、正しいと信じることを行う。恐れの不在ではなく、恐れの中での行動。',under:'臆病・回避',over:'無謀・リスク軽視',top:['誠実さ','粘り強さ','熱意','大局観']},
+{k:'粘',jp:'粘り強さ',en:'Perseverance',v:'cou',x:.22,y:.62,def:'始めたことを完遂する力。障害があっても軌道修正しながら前進し続ける。',under:'怠惰・途中放棄',over:'撤退できない・固執',top:['熱意','希望','勇敢さ','誠実さ']},
+{k:'誠',jp:'誠実さ',en:'Honesty',v:'cou',x:.32,y:.55,def:'真実を語り、自分の感情と行動に責任を持つ。演じるのではなく、そのまま在る。',under:'欺瞞・見栄',over:'無遠慮・配慮の欠如',top:['勇敢さ','大局観','公平さ','自律']},
+{k:'熱',jp:'熱意',en:'Zest',v:'cou',x:-.10,y:.32,def:'活力をもって人生に取り組む。中途半端にせず、全身で関わる。',under:'無気力・疲弊',over:'燃え尽き・過活動',top:['希望','感謝','好奇心','愛情']},
+{k:'愛',jp:'愛情',en:'Love',v:'hum',x:.68,y:-.42,def:'他者との深い相互的な絆を築き、大切にする。与えることも受け取ることもできる。',under:'孤立・親密さの回避',over:'依存・境界の消失',top:['親切心','感謝','熱意','チームワーク']},
+{k:'親',jp:'親切心',en:'Kindness',v:'hum',x:.52,y:.18,def:'見返りを求めず他者のために行動する。思いやりを行為に変える。',under:'冷淡・無関心',over:'過干渉・自己犠牲',top:['愛情','感謝','公平さ','チームワーク']},
+{k:'社',jp:'社会的知性',en:'Social Intelligence',v:'hum',x:-.22,y:-.52,def:'自分と他者の感情や動機を読み取り、場に応じて適切に振る舞う。',under:'場の読めなさ',over:'読みすぎ・操作的',top:['大局観','愛情','親切心','寛容さ']},
+{k:'団',jp:'チームワーク',en:'Teamwork',v:'jus',x:.65,y:.58,def:'集団の一員として忠実に役割を果たす。自分の成功より共同の成果を優先できる。',under:'個人プレー・非協力',over:'同調圧力への服従',top:['公平さ','リーダーシップ','親切心','感謝']},
+{k:'公',jp:'公平さ',en:'Fairness',v:'jus',x:.72,y:.52,def:'すべての人を偏りなく扱う。感情や利害に左右されず原則に基づいて判断する。',under:'えこひいき・偏見',over:'杓子定規・文脈無視',top:['チームワーク','誠実さ','リーダーシップ','寛容さ']},
+{k:'導',jp:'リーダーシップ',en:'Leadership',v:'jus',x:.52,y:.30,def:'集団の活動を組織し、メンバーが力を発揮できるよう動かす。良い関係を保ちながら成果を出す。',under:'放任・責任回避',over:'支配的・統制過多',top:['公平さ','チームワーク','社会的知性','熱意']},
+{k:'寛',jp:'寛容さ',en:'Forgiveness',v:'tem',x:.58,y:.42,def:'過ちを犯した人を許し、報復を手放す。人は変われると信じる。',under:'恨みの保持・報復',over:'甘さ・責任の免除',top:['謙虚さ','社会的知性','愛情','感謝']},
+{k:'謙',jp:'謙虚さ',en:'Humility',v:'tem',x:.80,y:.62,def:'成果を誇示せず、自分を等身大に見る。自分を低く見るのではなく、自分にこだわらない。',under:'傲慢・自己過信',over:'自己卑下・過小評価',top:['寛容さ','感謝','思慮深さ','誠実さ']},
+{k:'慮',jp:'思慮深さ',en:'Prudence',v:'tem',x:.55,y:.52,def:'選択に慎重で、不要なリスクを避ける。長期の結果を見据えて今を決める。',under:'衝動的・無計画',over:'慎重すぎて機会を逃す',top:['自律','謙虚さ','判断力','誠実さ']},
+{k:'律',jp:'自律',en:'Self-Regulation',v:'tem',x:-.08,y:-.32,def:'感情・欲求・行動を自ら調整する。衝動ではなく選択で動く。',under:'自制の欠如・過剰行動',over:'禁欲的・硬直',top:['思慮深さ','粘り強さ','誠実さ','謙虚さ']},
+{k:'美',jp:'審美眼',en:'Appreciation of Beauty',v:'tra',x:-.48,y:.12,def:'自然・芸術・技巧・卓越性に美を見出し、感動する。日常の中の質に気づく。',under:'鑑賞力の鈍麻',over:'完璧主義・批評家気質',top:['感謝','好奇心','創造性','希望']},
+{k:'謝',jp:'感謝',en:'Gratitude',v:'tra',x:.40,y:.02,def:'良いことに気づき、それを当然と思わない。受け取ったものを言葉と行動で返す。',under:'不満・当然視',over:'形式的な感謝の反復',top:['審美眼','希望','愛情','親切心']},
+{k:'望',jp:'希望',en:'Hope',v:'tra',x:-.08,y:.44,def:'良い未来を期待し、それを実現する道筋を描いて動く。楽観と行動が結びついている。',under:'悲観・無力感',over:'現実を見ない楽観',top:['熱意','感謝','粘り強さ','勇敢さ']},
+{k:'笑',jp:'ユーモア',en:'Humor',v:'tra',x:.62,y:-.50,def:'遊び心をもって物事に向き合い、他者に笑いをもたらす。緊張を緩める力。',under:'深刻すぎる・硬さ',over:'茶化し・逃避',top:['社会的知性','愛情','好奇心','熱意']},
+{k:'霊',jp:'超越',en:'Spirituality',v:'tra',x:.30,y:.60,def:'より大きな全体の中での自分の位置を感じ、人生の意味と目的を持つ。',under:'虚無感・意味の喪失',over:'教条的・現実離れ',top:['感謝','審美眼','希望','寛容さ']},
+];
+
+const $=id=>document.getElementById(id);
+const mapC=$('viaMap'),mapX=mapC.getContext('2d');
+let filter=null,sel=null;
+const PAD=17;
+let mw=0,mh=118;
+const mpx=x=>PAD+(x+1)/2*(mw-PAD*2);
+const mpy=y=>PAD+(1-y)/2*(mh-PAD*2);
+
+function sizeMap(){
+  const r=mapC.getBoundingClientRect();if(!r.width)return false;
+  const d=Math.min(window.devicePixelRatio||1,2);
+  mw=r.width;mh=118;
+  mapC.width=Math.round(mw*d);mapC.height=Math.round(mh*d);
+  mapX.setTransform(d,0,0,d,0,0);return true;}
+
+function drawMap(){
+  if(!sizeMap())return;
+  mapX.clearRect(0,0,mw,mh);
+  mapX.strokeStyle='rgba(150,182,214,.13)';mapX.lineWidth=.5;
+  mapX.beginPath();mapX.moveTo(PAD-6,mpy(0));mapX.lineTo(mw-PAD+6,mpy(0));
+  mapX.moveTo(mpx(0),PAD-6);mapX.lineTo(mpx(0),mh-PAD+6);mapX.stroke();
+  mapX.fillStyle='rgba(120,150,185,.42)';
+  mapX.font='6px Bahnschrift,"DIN Alternate",system-ui';mapX.letterSpacing='.10em';
+  mapX.textAlign='left';mapX.fillText('内向',2,mpy(0)-4);
+  mapX.textAlign='right';mapX.fillText('対人',mw-2,mpy(0)-4);
+  mapX.textAlign='center';mapX.fillText('理性',mpx(0),7);mapX.fillText('感情',mpx(0),mh-1);
+  mapX.letterSpacing='0px';
+  for(const s of S){
+    const V=VIRTUE[s.v],dim=filter&&s.v!==filter,on=sel===s;
+    const X=mpx(s.x),Y=mpy(s.y);
+    if(on){mapX.globalAlpha=.5;mapX.strokeStyle=V.hex;mapX.lineWidth=1;
+      mapX.beginPath();mapX.arc(X,Y,6.5,0,Math.PI*2);mapX.stroke();}
+    mapX.globalAlpha=dim?.13:(on?1:.8);
+    mapX.fillStyle=V.hex;
+    mapX.beginPath();mapX.arc(X,Y,on?3.6:2.4,0,Math.PI*2);mapX.fill();
+    if(!dim){mapX.globalAlpha=on?1:.62;mapX.fillStyle=on?'#fff':V.hex;
+      mapX.font=`${on?8:6.8}px "Segoe UI","Hiragino Sans",system-ui`;
+      mapX.textAlign='center';mapX.fillText(s.k,X,Y-5);}}
+  mapX.globalAlpha=1;}
+
+function hitMap(e){
+  const r=mapC.getBoundingClientRect();
+  const x=e.clientX-r.left,y=e.clientY-r.top;
+  let best=null,bd=Infinity;
+  for(const s of S){if(filter&&s.v!==filter)continue;
+    const dx=x-mpx(s.x),dy=y-mpy(s.y),d=dx*dx+dy*dy;
+    if(d<bd){bd=d;best=s;}}
+  return bd<190?best:null;}
+
+function renderCards(){
+  const box=$('viaCards');box.innerHTML='';
+  const list=S.filter(s=>!filter||s.v===filter);
+  for(const s of list){
+    const V=VIRTUE[s.v];
+    const b=document.createElement('button');
+    b.className='via-card'+(sel===s?' selected':'');
+    b.style.setProperty('--vc',V.hex);b.style.setProperty('--vcr',V.rgb);
+    b.innerHTML=`<div class="vvk">${s.k} ${V.jp}</div><div class="vvj">${s.jp}</div><div class="vve">${s.en}</div>`;
+    b.addEventListener('click',()=>open(s));
+    box.appendChild(b);}
+  $('viaMapHint').textContent=`${list.length}の強み`;}
+
+function open(s){
+  sel=s;const V=VIRTUE[s.v];
+  $('vm-title').textContent=s.jp;
+  $('vm-title').style.color=V.hex;
+  const badge=$('vm-badge');
+  badge.style.setProperty('--vc',V.hex);
+  badge.textContent=`${V.jp} ${V.en} · ${s.en}`;
+  $('vm-def').textContent=s.def;
+  $('vm-under').textContent=s.under;
+  $('vm-over').textContent=s.over;
+  const tags=$('vm-tags');tags.innerHTML='';
+  for(const n of s.top){
+    const t=document.createElement('button');t.className='vm-tag';t.textContent=n;
+    t.addEventListener('click',()=>{const f=S.find(z=>z.jp===n);if(f)open(f);});
+    tags.appendChild(t);}
+  $('vm-brain').textContent=`▸ 対応脳領域 ${V.regJp}`;
+  $('viaModal').classList.add('show');
+  if(window._isolateRegion)window._isolateRegion(V.reg);
+  renderCards();drawMap();}
+
+function close(){
+  $('viaModal').classList.remove('show');sel=null;
+  if(window._isolateRegion)window._isolateRegion(filter?VIRTUE[filter].reg:-1);
+  renderCards();drawMap();}
+
+// filter pills
+const pills=$('viaFilters');
+const mkPill=(label,key,hex,rgb)=>{
+  const b=document.createElement('button');
+  b.className='via-pill'+(key===null?' active':'');
+  b.style.setProperty('--vc',hex);b.style.setProperty('--vcr',rgb);
+  b.textContent=label;b.dataset.key=key===null?'':key;
+  b.addEventListener('click',()=>{
+    filter=(key!==null&&filter===key)?null:key;
+    [...pills.children].forEach(p=>p.classList.toggle('active',(p.dataset.key||null)===filter));
+    if(sel&&filter&&sel.v!==filter)sel=null;
+    if(window._isolateRegion)window._isolateRegion(filter?VIRTUE[filter].reg:-1);
+    renderCards();drawMap();});
+  pills.appendChild(b);};
+mkPill('ALL',null,'#9B8BFF','155,139,255');
+for(const [k,V] of Object.entries(VIRTUE))mkPill(V.jp,k,V.hex,V.rgb);
+
+mapC.addEventListener('click',e=>{const s=hitMap(e);if(s)open(s);});
+mapC.addEventListener('mousemove',e=>{mapC.style.cursor=hitMap(e)?'pointer':'default';});
+$('vm-close').addEventListener('click',close);
+addEventListener('keydown',e=>{if(e.key==='Escape'&&$('viaModal').classList.contains('show'))close();});
+
+// tabs
+const panes={neural:$('pane-neural'),via:$('pane-via')};
+document.querySelectorAll('.rpanel-tab').forEach(tab=>{
+  tab.addEventListener('click',()=>{
+    const p=tab.dataset.pane;
+    document.querySelectorAll('.rpanel-tab').forEach(t=>t.classList.toggle('active',t===tab));
+    panes.neural.style.display=p==='neural'?'flex':'none';
+    panes.via.classList.toggle('show',p==='via');
+    if(p==='via')requestAnimationFrame(drawMap);
+    else{if(window._isolateRegion&&!filter&&!sel)window._isolateRegion(-1);}});});
+
+renderCards();
+new ResizeObserver(()=>{if(panes.via.classList.contains('show'))drawMap();}).observe(mapC);
+})();
+</script>
